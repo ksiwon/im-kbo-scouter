@@ -1,46 +1,73 @@
-# Getting Started with Create React App
+# 🏆 KBO Foreign Hitter Predictor
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<div align="center">
 
-## Available Scripts
+![KBO Predictor](https://img.shields.io/badge/KBO-Predictor-blue)
+![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-4.9.4-3178C6?logo=typescript)
+![Styled Components](https://img.shields.io/badge/Styled_Components-5.3.6-DB7093?logo=styled-components)
 
-In the project directory, you can run:
+**Data-Driven Scouting with DIKW Model**
 
-### `npm start`
+KBO 리그 외국인 타자의 성공 가능성을 예측하는 인터랙티브 웹 애플리케이션
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+[Demo](#) • [Features](#features) • [Installation](#installation) • [Usage](#usage)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+</div>
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 📋 Table of Contents
 
-### `npm run build`
+- [Overview](#overview)
+- [Features](#features)
+- [DIKW Model](#dikw-model)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Project Structure](#project-structure)
+- [Usage](#usage)
+- [Data Analysis](#data-analysis)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
+- [License](#license)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🎯 Overview
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+KBO Foreign Hitter Predictor는 **DIKW(Data-Information-Knowledge-Wisdom) 모델**을 기반으로 외국인 선수의 KBO 적응 가능성을 예측하는 웹 애플리케이션입니다.
 
-### `npm run eject`
+### 프로젝트 목표
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- 📊 **데이터 기반 스카우팅**: 69명의 외국인 타자 통계 분석
+- 🔍 **상관관계 분석**: Pre-KBO와 KBO 성적 간의 관계 파악
+- 🎯 **예측 모델**: K-Success Score 계산으로 성공 가능성 예측
+- 💰 **리스크 감소**: 객관적 지표로 영입 실패 위험 최소화
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## ✨ Features
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### 📊 Dashboard
+- 총 분석 선수 수
+- 평균 wRC+ (Weighted Runs Created Plus)
+- 평균 홈런 수
+- 성공률 (wRC+ > 110)
 
-## Learn More
+### ⚖️ Player Comparison
+- Top 10 선수 성과 비교
+- 클릭으로 상세 통계 확인
+- 12가지 핵심 지표 시각화
+- 인터랙티브 선수 카드
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 📈 Correlation Analysis
+- K% 안정성: r ≈ 0.50 (중간 수준 상관관계)
+- BB% 안정성: r ≈ 0.29 (낮은 수준 상관관계)
+- wRC+ 전이성: r ≈ -0.12 (제한적 전이)
+- ΔStats 분포 분석
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 🔮 Prediction Model
+- **K-Success Score 계산기**
+- Pre-KBO 통계 입력
+- 실시간 성공 가능성 예측
+- 리스크 레벨 표시
