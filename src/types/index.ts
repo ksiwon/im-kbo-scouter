@@ -44,6 +44,7 @@ export interface Player {
   'pull%'?: number;
   'cent%'?: number;
   'oppo%'?: number;
+  [key: string]: any;
 }
 
 export interface PlayerData {

@@ -39,7 +39,7 @@ KBO Foreign Hitter Predictor는 **DIKW(Data-Information-Knowledge-Wisdom) 모델
 
 ### 프로젝트 목표
 
-- 📊 **데이터 기반 스카우팅**: 69명의 외국인 타자 통계 분석
+- 📊 **데이터 기반 스카우팅**: 65명의 외국인 타자 통계 분석
 - 🔍 **상관관계 분석**: Pre-KBO와 KBO 성적 간의 관계 파악
 - 🎯 **예측 모델**: K-Success Score 계산으로 성공 가능성 예측
 - 💰 **리스크 감소**: 객관적 지표로 영입 실패 위험 최소화
