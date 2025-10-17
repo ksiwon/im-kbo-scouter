@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-09-24T18:20:43.770393",
-  "total": 69,
+  "timestamp": "2025-10-17T16:15:02.797995",
+  "total": 65,
   "players": [
     {
       "name": "Karim Garcia",
@@ -2180,24 +2180,6 @@
       "b": 26
     },
     {
-      "name": "Rio Ruiz",
-      "year": 2022,
-      "period": "kbo_first_year",
-      "kbo_entry_year": 2022
-    },
-    {
-      "name": "Nick Martini",
-      "year": 2022,
-      "period": "kbo_first_year",
-      "kbo_entry_year": 2022
-    },
-    {
-      "name": "Mike Tauchman",
-      "year": 2022,
-      "period": "kbo_first_year",
-      "kbo_entry_year": 2022
-    },
-    {
       "name": "Juan Lagares",
       "year": 2022,
       "team": "LAA",
@@ -2553,12 +2535,6 @@
       "b": 39
     },
     {
-      "name": "Brian O'Grady",
-      "year": 2023,
-      "period": "kbo_first_year",
-      "kbo_entry_year": 2023
-    },
-    {
       "name": "Ronnie Dawson",
       "year": 2023,
       "team": "키움",
@@ -2839,6 +2815,30 @@
       "med%_percentage_of_balls_in_play_that_were_classified_as_hit_with_medium_speed_baseball_info_solutions": 36.6,
       "hard%_percentage_of_balls_in_play_that_were_classified_as_hit_with_hard_speed_baseball_info_solutions": 45.5,
       "b": 39
+    },
+    {
+      "name": "Rio Ruiz",
+      "year": 2022,
+      "period": "kbo_first_year",
+      "kbo_entry_year": 2022
+    },
+    {
+      "name": "Nick Martini",
+      "year": 2022,
+      "period": "kbo_first_year",
+      "kbo_entry_year": 2022
+    },
+    {
+      "name": "Mike Tauchman",
+      "year": 2022,
+      "period": "kbo_first_year",
+      "kbo_entry_year": 2022
+    },
+    {
+      "name": "Brian O'Grady",
+      "year": 2023,
+      "period": "kbo_first_year",
+      "kbo_entry_year": 2023
     }
   ]
 }
