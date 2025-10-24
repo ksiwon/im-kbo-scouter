@@ -25,7 +25,7 @@ interface ComparisonChartProps {
 function ComparisonChart({ kboData, preKboData }: ComparisonChartProps) {
   // 주요 지표 비교 데이터 생성
   const getComparisonData = () => {
-    const metrics = ['hr', 'pa', 'avg', 'obp', 'slg', 'wrc+', 'bb%', 'k%'];
+    const metrics = ['hr', 'pa', 'avg', 'obp', 'slg', 'wrc_plus', 'bb_pct', 'k_pct'];
     
     return metrics.map(metric => {
       const preFiltered = preKboData.filter(p => p[metric as keyof Player] !== undefined);
@@ -40,7 +40,7 @@ function ComparisonChart({ kboData, preKboData }: ComparisonChartProps) {
       const kboValue = isRate ? Number(kboAvg.toFixed(3)) : Number(kboAvg.toFixed(1));
 
       return {
-        metric: metric.toUpperCase(),
+        metric: metric.toUpperCase().replace('_', ' '),
         'Pre-KBO': preValue,
         'KBO 첫 해': kboValue,
       };

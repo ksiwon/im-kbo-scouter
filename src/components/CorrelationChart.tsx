@@ -85,12 +85,12 @@ interface CorrelationChartProps {
 }
 
 function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
-  const [selectedMetric, setSelectedMetric] = useState<'wrc+' | 'k%' | 'bb%' | 'hr'>('wrc+');
+  const [selectedMetric, setSelectedMetric] = useState<'wrc_plus' | 'k_pct' | 'bb_pct' | 'hr'>('wrc_plus');
 
   const metrics = [
-    { key: 'wrc+' as const, label: 'wRC+', description: '가중 득점 생산력' },
-    { key: 'k%' as const, label: 'K%', description: '삼진율' },
-    { key: 'bb%' as const, label: 'BB%', description: '볼넷율' },
+    { key: 'wrc_plus' as const, label: 'wRC+', description: '가중 득점 생산력' },
+    { key: 'k_pct' as const, label: 'K%', description: '삼진율' },
+    { key: 'bb_pct' as const, label: 'BB%', description: '볼넷율' },
     { key: 'hr' as const, label: 'HR', description: '홈런' },
   ];
 
@@ -100,10 +100,10 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
 
     kboData.forEach(kboPlayer => {
       const prePlayer = preKboData.find(p => p.name === kboPlayer.name);
-      if (prePlayer && kboPlayer[selectedMetric] !== undefined && prePlayer[selectedMetric] !== undefined && kboPlayer['wrc+']) {
+      if (prePlayer && kboPlayer[selectedMetric] !== undefined && prePlayer[selectedMetric] !== undefined && kboPlayer.wrc_plus) {
         matchedData.push({
           pre: prePlayer[selectedMetric] || 0,
-          kbo: kboPlayer['wrc+'] || 0,
+          kbo: kboPlayer.wrc_plus || 0,
           name: kboPlayer.name,
         });
       }
@@ -148,14 +148,14 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
   };
 
   const getInsight = () => {
-    if (selectedMetric === 'k%') {
+    if (selectedMetric === 'k_pct') {
       return `삼진율(K%)은 상관계수 r ≈ ${correlation.toFixed(2)}로 중간 정도의 안정성을 보입니다. 이는 타자의 컨택 능력이 리그를 옮겨도 어느 정도 유지된다는 의미입니다.`;
-    } else if (selectedMetric === 'bb%') {
+    } else if (selectedMetric === 'bb_pct') {
       return `볼넷율(BB%)은 상관계수 r ≈ ${correlation.toFixed(2)}로 K%보다 약한 안정성을 보입니다. 선구안은 리그 환경에 따라 변동이 큰 편입니다.`;
-    } else if (selectedMetric === 'wrc+') {
+    } else if (selectedMetric === 'wrc_plus') {
       return `wRC+는 상관계수 r ≈ ${correlation.toFixed(2)}로 매우 약한 상관관계를 보입니다. 이는 리그/구장/시대 효과로 인해 환경 의존적 지표는 직접적인 이전이 어렵다는 것을 의미합니다.`;
     } else {
-      return `홈런은 상관계수 r ≈ ${correlation.toFixed(2)}의 상관관계를 보입니다. 장타력은 어느 정도 이전되지만 타석 수와 구장 환경의 영향을 받습니다.`;
+      return `홈런은 상관계수 r ≈ ${correlation.toFixed(2)}의 상관관계를 보입니다. 장타력은 어느 정도 이전되지만 타선 순서와 구장 환경의 영향을 받습니다.`;
     }
   };
 

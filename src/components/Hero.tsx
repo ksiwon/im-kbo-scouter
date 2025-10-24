@@ -100,7 +100,7 @@ function Hero() {
         DIKW 모델 기반 예측 시스템
       </HeroSubtitle>
       <HeroMeta>
-        📊 65명의 외국인 타자 분석 | 🎯 2010-2024 시즌
+        📊 65명의 외국인 타자 분석 | 🎯 2010-2024 시즌 | 🌟 2025 AAA 스카우팅
       </HeroMeta>
       <ScrollHint>
         <svg width="30" height="30" viewBox="0 0 30 30" fill="white">

@@ -65,11 +65,11 @@ function StatsOverview({ kboData, preKboData }: StatsOverviewProps) {
   const [activeStat, setActiveStat] = useState<string | null>(null);
 
   // 실제 데이터로 통계 계산
-  const kboPlayers = kboData.filter(p => p.season && p['wrc+']);
+  const kboPlayers = kboData.filter(p => p.season && p.wrc_plus);
   const totalPlayers = kboPlayers.length;
   
   const avgWrcPlus = Math.round(
-    kboPlayers.reduce((sum, p) => sum + (p['wrc+'] || 0), 0) / totalPlayers
+    kboPlayers.reduce((sum, p) => sum + (p.wrc_plus || 0), 0) / totalPlayers
   );
   
   const avgHR = Math.round(
@@ -77,7 +77,7 @@ function StatsOverview({ kboData, preKboData }: StatsOverviewProps) {
   );
   
   const successRate = Math.round(
-    (kboPlayers.filter(p => (p['wrc+'] || 0) > 110).length / totalPlayers) * 100
+    (kboPlayers.filter(p => (p.wrc_plus || 0) > 110).length / totalPlayers) * 100
   );
   
   const avgPA = Math.round(

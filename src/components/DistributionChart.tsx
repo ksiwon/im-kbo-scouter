@@ -75,10 +75,10 @@ interface DistributionChartProps {
 }
 
 function DistributionChart({ kboData, preKboData }: DistributionChartProps) {
-  const [selectedMetric, setSelectedMetric] = useState<'hr' | 'pa' | 'wrc+' | 'avg'>('wrc+');
+  const [selectedMetric, setSelectedMetric] = useState<'hr' | 'pa' | 'wrc_plus' | 'avg'>('wrc_plus');
 
   const metrics = [
-    { key: 'wrc+' as const, label: 'wRC+', description: '가중 득점 생산력' },
+    { key: 'wrc_plus' as const, label: 'wRC+', description: '가중 득점 생산력' },
     { key: 'hr' as const, label: 'HR', description: '홈런' },
     { key: 'pa' as const, label: 'PA', description: '타석' },
     { key: 'avg' as const, label: 'AVG', description: '타율' },
@@ -170,14 +170,17 @@ function DistributionChart({ kboData, preKboData }: DistributionChartProps) {
       <ResponsiveContainer width="100%" height={400}>
         <BarChart data={comparisonData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
-          <XAxis dataKey="period" stroke="#9aa0a6" />
-          <YAxis stroke="#9aa0a6" />
+          <XAxis dataKey="period" stroke="#ffffff" />
+          <YAxis stroke="#ffffff" />
           <Tooltip 
             contentStyle={{ 
               backgroundColor: '#1e2749', 
               border: '1px solid #4285f4',
               borderRadius: '8px',
+              color: '#ffffff',
             }}
+            labelStyle={{ fontWeight: '700', color: '#ffffff' }}
+            itemStyle={{ color: '#ffffff' }}
           />
           <Bar dataKey="value" name={metrics.find(m => m.key === selectedMetric)?.label}>
             {comparisonData.map((entry, index) => (

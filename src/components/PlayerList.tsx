@@ -148,8 +148,8 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
 
   // Top 10 선수 추출 (wRC+ 기준)
   const topPlayers = kboData
-    .filter(p => p.season && p['wrc+'])
-    .sort((a, b) => (b['wrc+'] || 0) - (a['wrc+'] || 0))
+    .filter(p => p.season && p.wrc_plus)
+    .sort((a, b) => (b.wrc_plus || 0) - (a.wrc_plus || 0))
     .slice(0, 10);
 
   // Pre-KBO 데이터 찾기
@@ -183,7 +183,7 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
 
             <StatsGrid>
               <StatItem>
-                <StatValue>{player['wrc+']}</StatValue>
+                <StatValue>{player.wrc_plus}</StatValue>
                 <StatLabel>wRC+</StatLabel>
               </StatItem>
               <StatItem>
@@ -209,15 +209,15 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
                 <ComparisonTitle>⚾ KBO 첫 해 상세 기록</ComparisonTitle>
                 <DetailedStatsGrid>
                   <StatItem>
-                    <StatValue>{player.rbi_runs_batted_in}</StatValue>
+                    <StatValue>{player.rbi}</StatValue>
                     <StatLabel>RBI</StatLabel>
                   </StatItem>
                   <StatItem>
-                    <StatValue>{player.r_runs}</StatValue>
+                    <StatValue>{player.r}</StatValue>
                     <StatLabel>득점</StatLabel>
                   </StatItem>
                   <StatItem>
-                    <StatValue>{player.sb_stolen_bases}</StatValue>
+                    <StatValue>{player.sb}</StatValue>
                     <StatLabel>도루</StatLabel>
                   </StatItem>
                   <StatItem>
@@ -229,15 +229,15 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
                     <StatLabel>SLG</StatLabel>
                   </StatItem>
                   <StatItem>
-                    <StatValue>{player['bb%']?.toFixed(1)}%</StatValue>
+                    <StatValue>{player.bb_pct?.toFixed(1)}%</StatValue>
                     <StatLabel>BB%</StatLabel>
                   </StatItem>
                   <StatItem>
-                    <StatValue>{player['k%']?.toFixed(1)}%</StatValue>
+                    <StatValue>{player.k_pct?.toFixed(1)}%</StatValue>
                     <StatLabel>K%</StatLabel>
                   </StatItem>
                   <StatItem>
-                    <StatValue>{player.g_games_played}</StatValue>
+                    <StatValue>{player.g}</StatValue>
                     <StatLabel>경기</StatLabel>
                   </StatItem>
                 </DetailedStatsGrid>
@@ -249,7 +249,7 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
                     </ComparisonTitle>
                     <ComparisonGrid>
                       <StatItem>
-                        <StatValue>{preData['wrc+']}</StatValue>
+                        <StatValue>{preData.wrc_plus}</StatValue>
                         <StatLabel>wRC+</StatLabel>
                       </StatItem>
                       <StatItem>
@@ -265,11 +265,11 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
                         <StatLabel>OPS</StatLabel>
                       </StatItem>
                       <StatItem>
-                        <StatValue>{preData['bb%']?.toFixed(1)}%</StatValue>
+                        <StatValue>{preData.bb_pct?.toFixed(1)}%</StatValue>
                         <StatLabel>BB%</StatLabel>
                       </StatItem>
                       <StatItem>
-                        <StatValue>{preData['k%']?.toFixed(1)}%</StatValue>
+                        <StatValue>{preData.k_pct?.toFixed(1)}%</StatValue>
                         <StatLabel>K%</StatLabel>
                       </StatItem>
                       <StatItem>

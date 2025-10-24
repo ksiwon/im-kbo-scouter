@@ -36,64 +36,64 @@ function CorrelationAnalysis({ kboData, preKboData }: CorrelationAnalysisProps) 
   return (
     <AnalysisContainer>
       <Card>
-        <CardTitle>📊 Correlation Matrix Analysis</CardTitle>
+        <CardTitle>📊 상관관계 매트릭스 분석</CardTitle>
         <StatLabel style={{ marginTop: '16px' }}>
-          Key Findings from DIKW Knowledge Layer:
+          DIKW Knowledge 레이어의 주요 발견:
         </StatLabel>
         <FindingsList>
           <div>
-            <strong>K% Stability:</strong> r ≈ 0.50 
+            <strong>K% 안정성:</strong> r ≈ 0.50 
             <br />
-            <Highlight>→ Moderate correlation Pre-KBO → KBO</Highlight>
+            <Highlight>→ Pre-KBO → KBO 중간 정도의 상관관계</Highlight>
           </div>
           <div>
-            <strong>BB% Stability:</strong> r ≈ 0.29 
+            <strong>BB% 안정성:</strong> r ≈ 0.29 
             <br />
-            <Highlight>→ Weaker correlation than K%</Highlight>
+            <Highlight>→ K%보다 약한 상관관계</Highlight>
           </div>
           <div>
-            <strong>wRC+ Transfer:</strong> r ≈ -0.12 
+            <strong>wRC+ 전이:</strong> r ≈ -0.12 
             <br />
-            <Highlight>→ Limited transferability due to league/park/era effects</Highlight>
+            <Highlight>→ 리그/구장/시대 효과로 인한 제한적 전이성</Highlight>
           </div>
           <div style={{ 
             marginTop: '16px', 
             color: theme.colors.chart.green,
             borderLeft: `3px solid ${theme.colors.chart.green}`
           }}>
-            <strong>Key Insight:</strong> Plate discipline metrics (K%, BB%) show better 
-            stability than environment-dependent stats like wRC+
+            <strong>핵심 인사이트:</strong> 플레이트 디시플린 지표(K%, BB%)가 
+            환경 의존적 지표(wRC+)보다 더 나은 안정성을 보임
           </div>
         </FindingsList>
       </Card>
 
       <Card>
-        <CardTitle>📈 Distribution of Changes (Δ, KBO − Pre)</CardTitle>
+        <CardTitle>📈 변화량 분포 (Δ, KBO − Pre)</CardTitle>
         <FindingsList>
           <div>
-            <strong>ΔK%:</strong> mean -1.77 pp, median -1.50 pp (Std 6.75)
+            <strong>ΔK%:</strong> 평균 -1.77 pp, 중앙값 -1.50 pp (표준편차 6.75)
             <br />
-            <Highlight>→ Strikeout rate slightly decreases on average</Highlight>
+            <Highlight>→ 삼진율이 평균적으로 약간 감소</Highlight>
           </div>
           <div>
-            <strong>ΔBB%:</strong> mean +0.48 pp, median +0.60 pp (Std 5.61)
+            <strong>ΔBB%:</strong> 평균 +0.48 pp, 중앙값 +0.60 pp (표준편차 5.61)
             <br />
-            <Highlight>→ Walk rate slightly increases</Highlight>
+            <Highlight>→ 볼넷율이 약간 증가</Highlight>
           </div>
           <div>
-            <strong>ΔwRC+:</strong> mean -6.15, median +3.0 (Std 65.27)
+            <strong>ΔwRC+:</strong> 평균 -6.15, 중앙값 +3.0 (표준편차 65.27)
             <br />
-            <Highlight>→ High variance & skew (large negative outliers)</Highlight>
+            <Highlight>→ 높은 분산과 왜도 (큰 음수 이상치가 평균을 낮춤)</Highlight>
           </div>
           <div>
-            <strong>ΔHR/600:</strong> mean +2.51 (Std 16.15)
+            <strong>ΔHR/600:</strong> 평균 +2.51 (표준편차 16.15)
             <br />
-            <Highlight>→ Modest uptick in power production</Highlight>
+            <Highlight>→ PA 정규화 후 적당한 파워 상승</Highlight>
           </div>
           <div>
-            <strong>ΔPA:</strong> mean +82.9, median +102
+            <strong>ΔPA:</strong> 평균 +82.9, 중앙값 +102
             <br />
-            <Highlight>→ First KBO seasons tend to have more plate appearances</Highlight>
+            <Highlight>→ KBO 첫 시즌이 더 많은 타석을 받는 경향</Highlight>
           </div>
         </FindingsList>
       </Card>

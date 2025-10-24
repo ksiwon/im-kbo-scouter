@@ -32,11 +32,11 @@ function Dashboard({ kboData, preKboData }: DashboardProps) {
   const playersWithSeason = kboData.filter((p: Player) => p.season);
   const totalPlayers = playersWithSeason.length;
   
-  // wrc+가 있는 선수들로만 평균 계산
-  const playersWithWrc = playersWithSeason.filter((p: Player) => p['wrc+']);
+  // wrc_plus가 있는 선수들로만 평균 계산
+  const playersWithWrc = playersWithSeason.filter((p: Player) => p.wrc_plus);
   const avgWrcPlus = playersWithWrc.length > 0
     ? Math.round(
-        playersWithWrc.reduce((sum: number, p: Player) => sum + (p['wrc+'] || 0), 0) / playersWithWrc.length
+        playersWithWrc.reduce((sum: number, p: Player) => sum + (p.wrc_plus || 0), 0) / playersWithWrc.length
       )
     : 0;
   
@@ -47,37 +47,37 @@ function Dashboard({ kboData, preKboData }: DashboardProps) {
       )
     : 0;
   
-  // 성공률 (wrc+ > 110)
+  // 성공률 (wrc_plus > 110)
   const successRate = playersWithWrc.length > 0
     ? Math.round(
-        (playersWithWrc.filter((p: Player) => (p['wrc+'] || 0) > 110).length / playersWithWrc.length) * 100
+        (playersWithWrc.filter((p: Player) => (p.wrc_plus || 0) > 110).length / playersWithWrc.length) * 100
       )
     : 0;
 
   return (
     <DashboardContainer>
       <Card>
-        <CardTitle>👥 Total Players Analyzed</CardTitle>
+        <CardTitle>👥 분석 선수 수</CardTitle>
         <StatValue>{totalPlayers}</StatValue>
-        <StatLabel>Foreign hitters in KBO (2010+)</StatLabel>
+        <StatLabel>2010년 이후 KBO 외국인 타자</StatLabel>
       </Card>
       
       <Card>
-        <CardTitle>⚡ Average wRC+</CardTitle>
+        <CardTitle>⚡ 평균 wRC+</CardTitle>
         <StatValue>{avgWrcPlus}</StatValue>
-        <StatLabel>First KBO season performance ({playersWithWrc.length} players)</StatLabel>
+        <StatLabel>KBO 첫 시즌 성적 ({playersWithWrc.length}명)</StatLabel>
       </Card>
       
       <Card>
-        <CardTitle>💪 Average Home Runs</CardTitle>
+        <CardTitle>💪 평균 홈런</CardTitle>
         <StatValue>{avgHR}</StatValue>
-        <StatLabel>Per season in KBO debut year</StatLabel>
+        <StatLabel>KBO 데뷔 시즌 기준</StatLabel>
       </Card>
       
       <Card>
-        <CardTitle>✅ Success Rate</CardTitle>
+        <CardTitle>✅ 성공률</CardTitle>
         <StatValue>{successRate}%</StatValue>
-        <StatLabel>Players with wRC+ &gt; 110</StatLabel>
+        <StatLabel>wRC+ &gt; 110 달성 선수</StatLabel>
       </Card>
     </DashboardContainer>
   );

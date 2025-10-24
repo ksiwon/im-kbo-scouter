@@ -75,12 +75,12 @@ interface DeltaDistributionProps {
 }
 
 function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
-  const [selectedMetric, setSelectedMetric] = useState<'wrc+' | 'k%' | 'bb%' | 'hr'>('wrc+');
+  const [selectedMetric, setSelectedMetric] = useState<'wrc_plus' | 'k_pct' | 'bb_pct' | 'hr'>('wrc_plus');
 
   const metrics = [
-    { key: 'wrc+' as const, label: 'wRC+' },
-    { key: 'k%' as const, label: 'K%' },
-    { key: 'bb%' as const, label: 'BB%' },
+    { key: 'wrc_plus' as const, label: 'wRC+' },
+    { key: 'k_pct' as const, label: 'K%' },
+    { key: 'bb_pct' as const, label: 'BB%' },
     { key: 'hr' as const, label: 'HR' },
   ];
 
@@ -159,6 +159,8 @@ function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
               border: '1px solid #4285f4',
               borderRadius: '8px',
             }}
+            labelStyle={{ fontWeight: '700', color: '#ffffff' }}
+            itemStyle={{ color: '#ffffff' }}
           />
           <ReferenceLine x={mean} stroke="#ea4335" strokeDasharray="5 5" label="평균" />
           <Bar dataKey="count" name="선수 수">
