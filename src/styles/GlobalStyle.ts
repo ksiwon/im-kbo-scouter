@@ -39,12 +39,12 @@ export const theme = {
       pink: '#f538a0',
     },
     
-    // Gradients
+    // Gradients (단색으로 변경)
     gradient: {
-      primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      success: 'linear-gradient(135deg, #667eea 0%, #34a853 100%)',
-      warning: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      info: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      primary: '#1a73e8',
+      success: '#34a853',
+      warning: '#fbbc04',
+      info: '#4285f4',
     },
   },
   
@@ -86,6 +86,11 @@ export const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
   
+  html {
+    /* 부드러운 스크롤을 위해 추가 (가로 스크롤 섹션에 도움) */
+    scroll-behavior: smooth;
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -94,7 +99,8 @@ export const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     background: ${theme.colors.bg.primary};
     color: ${theme.colors.text.primary};
-    overflow-x: hidden;
+    overflow-x: hidden; /* body 자체의 스크롤은 숨김 */
+    overflow-y: hidden;
   }
   
   code {

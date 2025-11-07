@@ -182,11 +182,11 @@ function DistributionChart({ kboData, preKboData }: DistributionChartProps) {
             labelStyle={{ fontWeight: '700', color: '#ffffff' }}
             itemStyle={{ color: '#ffffff' }}
           />
-          <Bar dataKey="value" name={metrics.find(m => m.key === selectedMetric)?.label}>
+            <Bar dataKey="value" name={metrics.find(m => m.key === selectedMetric)?.label} barSize={100}>
             {comparisonData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={index === 0 ? '#fbbc04' : '#4285f4'} />
             ))}
-          </Bar>
+            </Bar>
         </BarChart>
       </ResponsiveContainer>
 

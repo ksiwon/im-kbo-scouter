@@ -5,7 +5,7 @@ import { Player } from '../types';
 
 const OverviewContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   animation: fadeIn 0.8s ease;
   
@@ -17,7 +17,7 @@ const OverviewContainer = styled.div`
 
 const StatCard = styled.div<{ active?: boolean }>`
   background: ${props => props.theme.colors.bg.tertiary};
-  padding: 2rem;
+  padding: 1rem;
   border-radius: ${props => props.theme.borderRadius.xl};
   text-align: center;
   transition: all ${props => props.theme.transitions.normal};
@@ -25,7 +25,7 @@ const StatCard = styled.div<{ active?: boolean }>`
   border: 2px solid ${props => props.active ? props.theme.colors.primary : 'transparent'};
   transform: ${props => props.active ? 'scale(1.05)' : 'scale(1)'};
   box-shadow: ${props => props.active ? props.theme.shadows.xl : props.theme.shadows.md};
-  
+
   &:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: ${props => props.theme.shadows.xl};
@@ -34,12 +34,9 @@ const StatCard = styled.div<{ active?: boolean }>`
 `;
 
 const StatValue = styled.div`
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 700;
-  background: ${props => props.theme.colors.gradient.info};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: ${props => props.theme.colors.primary};
   margin-bottom: 0.5rem;
 `;
 
@@ -50,7 +47,7 @@ const StatLabel = styled.div`
 `;
 
 const StatDescription = styled.div`
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: ${props => props.theme.colors.text.disabled};
   margin-top: 0.5rem;
   line-height: 1.4;
@@ -64,7 +61,6 @@ interface StatsOverviewProps {
 function StatsOverview({ kboData, preKboData }: StatsOverviewProps) {
   const [activeStat, setActiveStat] = useState<string | null>(null);
 
-  // 실제 데이터로 통계 계산
   const kboPlayers = kboData.filter(p => p.season && p.wrc_plus);
   const totalPlayers = kboPlayers.length;
   
@@ -83,7 +79,7 @@ function StatsOverview({ kboData, preKboData }: StatsOverviewProps) {
   const avgPA = Math.round(
     kboPlayers.reduce((sum, p) => sum + (p.pa || 0), 0) / totalPlayers
   );
-
+  
   const stats = [
     {
       id: 'total',

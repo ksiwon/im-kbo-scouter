@@ -38,7 +38,6 @@ const FilterButton = styled.button<{ active?: boolean }>`
   font-size: 0.9rem;
   font-weight: 600;
   transition: all ${props => props.theme.transitions.normal};
-  
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${props => props.theme.shadows.md};
@@ -83,7 +82,6 @@ const PlayerCard = styled.div<{ riskLevel: string }>`
     props.riskLevel === 'Moderate' ? '#fbbc04' :
     '#ea4335'
   };
-  
   &:hover {
     transform: translateY(-4px);
     box-shadow: ${props => props.theme.shadows.xl};
@@ -112,9 +110,9 @@ const ScoreBadge = styled.div<{ score: number }>`
   padding: 0.5rem 1rem;
   border-radius: ${props => props.theme.borderRadius.md};
   background: ${props => 
-    props.score >= 67 ? 'linear-gradient(135deg, #34a853 0%, #0f9d58 100%)' :
-    props.score >= 33 ? 'linear-gradient(135deg, #fbbc04 0%, #f57c00 100%)' :
-    'linear-gradient(135deg, #ea4335 0%, #d32f2f 100%)'
+    props.score >= 67 ? props.theme.colors.success :
+    props.score >= 33 ? props.theme.colors.warning :
+    props.theme.colors.danger
   };
   color: white;
   font-weight: 700;
@@ -184,7 +182,6 @@ const InsightItem = styled.li<{ type: 'strength' | 'concern' }>`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  
   &::before {
     content: ${props => props.type === 'strength' ? '"✓"' : '"⚠"'};
   }
@@ -244,7 +241,6 @@ const PageNumber = styled.button<{ active?: boolean }>`
   font-size: 0.9rem;
   font-weight: ${props => props.active ? '700' : '500'};
   transition: all ${props => props.theme.transitions.fast};
-  
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${props => props.theme.shadows.sm};
@@ -286,7 +282,6 @@ const CloseButton = styled.button`
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
-  
   &:hover {
     color: ${props => props.theme.colors.primary};
   }
@@ -312,7 +307,6 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
   const [currentPage, setCurrentPage] = useState(1);
   const PLAYERS_PER_PAGE = 12;
 
-  // 개선된 K-Success Score 계산 (더 많은 지표 활용)
   const calculateKSuccessScore = (player: Player): KSuccessScore => {
     const wrcPlus = player.wrc_plus || 100;
     const kPct = player.k_pct || 20;
@@ -323,130 +317,89 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
     const babip = player.babip || 0.300;
     const obp = player.obp || 0.320;
     const slg = player.slg || 0.400;
+    const ldPct = player.ld_pct || 20;
+    const gbPct = player.gb_pct || 45;
+    const iffbPct = player.iffb_pct || 10;
+    const swstrPct = player.swstr_pct || 10;
     
-    // 타구 분포 지표
-    const ldPct = player.ld_pct || 20;  // 라인드라이브 비율
-    const gbPct = player.gb_pct || 45;  // 땅볼 비율
-    const iffbPct = player.iffb_pct || 10; // 내야 플라이 비율
-    
-    // 스윙 지표
-    const swstrPct = player.swstr_pct || 10; // 헛스윙 비율
-    
-    // DIKW 분석 기반 가중치
-    // K% 안정성: r ≈ 0.50 (중간 상관관계) - 높은 가중치
-    // BB% 안정성: r ≈ 0.29 (약한 상관관계) - 중간 가중치
-    // wRC+ 전이: r ≈ -0.12 (제한적) - 낮은 가중치
-    
-    // 1. 기본 플레이트 디시플린 점수 (0-35점)
-    const kScore = Math.max(0, (25 - kPct) * 1.2); // 삼진율이 낮을수록 높은 점수
-    const bbScore = Math.max(0, (bbPct - 5) * 1.0); // 볼넷율이 높을수록 높은 점수
-    const swstrScore = Math.max(0, (15 - swstrPct) * 0.8); // 헛스윙이 적을수록 높은 점수
+    const kScore = Math.max(0, (25 - kPct) * 1.2);
+    const bbScore = Math.max(0, (bbPct - 5) * 1.0);
+    const swstrScore = Math.max(0, (15 - swstrPct) * 0.8);
     const disciplineScore = Math.min(35, kScore + bbScore + swstrScore);
     
-    // 2. 파워 및 타구 품질 점수 (0-30점)
-    const powerScore = Math.min(15, (hr / pa) * 1000 * 0.75); // HR/PA 비율
-    const ldScore = Math.max(0, (ldPct - 18) * 0.4); // 라인드라이브는 좋은 타구
-    const iffbPenalty = Math.max(0, (iffbPct - 8) * 0.5); // 내야플라이는 안좋은 타구
+    const powerScore = Math.min(15, (hr / pa) * 1000 * 0.75);
+    const ldScore = Math.max(0, (ldPct - 18) * 0.4);
+    const iffbPenalty = Math.max(0, (iffbPct - 8) * 0.5);
     const batQualityScore = Math.min(30, powerScore + ldScore - iffbPenalty);
     
-    // 3. 출루 및 장타 능력 점수 (0-20점)
-    const obpScore = Math.max(0, (obp - 0.300) * 50); // OBP가 높을수록
-    const slgScore = Math.max(0, (slg - 0.350) * 30); // SLG가 높을수록
+    const obpScore = Math.max(0, (obp - 0.300) * 50);
+    const slgScore = Math.max(0, (slg - 0.350) * 30);
     const onBaseScore = Math.min(20, obpScore + slgScore);
     
-    // 4. BABIP 안정성 점수 (0-10점)
-    // BABIP이 너무 높으면 운이 좋았을 가능성 (감점)
-    // BABIP이 적정 수준이면 진짜 실력 (가점)
-    const babipScore = babip > 0.380 ? Math.max(0, 10 - (babip - 0.380) * 30) :
-                       babip < 0.280 ? Math.max(0, (babip - 0.250) * 30) :
-                       10; // 0.280-0.380 구간은 만점
+    const babipScore = babip > 0.380 ?
+      Math.max(0, 10 - (babip - 0.380) * 30) :
+      babip < 0.280 ?
+      Math.max(0, (babip - 0.250) * 30) :
+      10;
     
-    // 5. 나이 및 경험 점수 (0-10점)
-    const ageScore = Math.max(0, Math.min(10, (32 - age) * 0.7)); // 젊을수록 가점
-    const paScore = Math.min(5, (pa - 200) / 80); // 충분한 샘플 사이즈
+    const ageScore = Math.max(0, Math.min(10, (32 - age) * 0.7));
+    const paScore = Math.min(5, (pa - 200) / 80);
     const experienceScore = ageScore + paScore;
     
-    // 6. wRC+ 기반 점수 (0-15점) - 낮은 가중치 (환경 의존적)
     const wrcScore = Math.max(0, Math.min(15, (wrcPlus - 80) * 0.25));
     
-    // 총점 계산 (0-100)
     const totalScore = Math.max(0, Math.min(100,
       disciplineScore + batQualityScore + onBaseScore + 
       babipScore + experienceScore + wrcScore
     ));
     
-    // 예상 KBO wRC+ (더 보수적인 회귀)
-    // 플레이트 디시플린 지표들을 더 반영
     const disciplineFactor = (100 - kPct * 2 + bbPct * 1.5) / 100;
     const predictedWrcPlus = Math.round(
       wrcPlus * 0.75 + 100 * 0.25 + disciplineFactor * 5
     );
     
-    // 성공 확률 (wRC+ > 110 기준)
     const successProbability = Math.min(95, Math.max(5, 
       totalScore * 0.9 + (kPct < 20 ? 5 : 0) + (bbPct > 10 ? 5 : 0)
     ));
     
-    // 리스크 레벨
     const riskLevel: 'Low' | 'Moderate' | 'High' = 
       totalScore >= 67 ? 'Low' :
       totalScore >= 33 ? 'Moderate' :
       'High';
-    
-    // 강점 분석 (더 상세하게)
+      
     const strengths: string[] = [];
     if (kPct < 18) strengths.push(`엘리트 컨택 능력 (K% ${kPct.toFixed(1)})`);
     else if (kPct < 22) strengths.push(`우수한 컨택 능력 (K% ${kPct.toFixed(1)})`);
-    
     if (bbPct > 12) strengths.push(`뛰어난 선구안 (BB% ${bbPct.toFixed(1)})`);
     else if (bbPct > 9) strengths.push(`좋은 선구안 (BB% ${bbPct.toFixed(1)})`);
-    
     if ((hr / pa) > 0.06) strengths.push(`강력한 장타력 (${hr}HR, ${((hr/pa)*100).toFixed(1)}%)`);
     else if ((hr / pa) > 0.04) strengths.push(`준수한 파워 (${hr}HR)`);
-    
     if (swstrPct < 9) strengths.push(`탁월한 스윙 컨택 (SwStr% ${swstrPct.toFixed(1)})`);
-    
     if (ldPct > 22) strengths.push(`우수한 타구 품질 (LD% ${ldPct.toFixed(1)})`);
-    
     if (age < 25) strengths.push(`매우 젊음 (${age}세)`);
     else if (age < 27) strengths.push(`젊은 나이 (${age}세)`);
-    
     if (wrcPlus > 140) strengths.push(`AAA 엘리트급 (wRC+ ${wrcPlus})`);
     else if (wrcPlus > 120) strengths.push(`AAA 우수 성적 (wRC+ ${wrcPlus})`);
-    
     if (pa > 450) strengths.push(`충분한 샘플 (${pa} PA)`);
     else if (pa > 350) strengths.push(`적정 샘플 (${pa} PA)`);
-    
     if (obp > 0.380) strengths.push(`높은 출루율 (OBP ${obp.toFixed(3)})`);
-    
     if (babip > 0.300 && babip < 0.370) strengths.push(`안정적인 BABIP (${babip.toFixed(3)})`);
     
-    // 우려사항 (더 상세하게)
     const concerns: string[] = [];
     if (kPct > 28) concerns.push(`매우 높은 삼진율 (K% ${kPct.toFixed(1)})`);
     else if (kPct > 24) concerns.push(`높은 삼진율 (K% ${kPct.toFixed(1)})`);
-    
     if (bbPct < 5) concerns.push(`매우 낮은 출루 능력 (BB% ${bbPct.toFixed(1)})`);
     else if (bbPct < 7) concerns.push(`낮은 출루 능력 (BB% ${bbPct.toFixed(1)})`);
-    
     if ((hr / pa) < 0.025) concerns.push(`제한적 장타력 (${hr}HR, ${((hr/pa)*100).toFixed(1)}%)`);
-    
     if (swstrPct > 12) concerns.push(`높은 헛스윙율 (SwStr% ${swstrPct.toFixed(1)})`);
-    
     if (iffbPct > 12) concerns.push(`높은 내야플라이 비율 (IFFB% ${iffbPct.toFixed(1)})`);
-    
     if (gbPct > 50) concerns.push(`높은 땅볼 비율 (GB% ${gbPct.toFixed(1)})`);
-    
     if (age > 31) concerns.push(`높은 나이 (${age}세)`);
     else if (age > 29) concerns.push(`나이 고려 필요 (${age}세)`);
-    
     if (pa < 250) concerns.push(`제한적 샘플 (${pa} PA)`);
-    
     if (wrcPlus < 95) concerns.push(`AAA 평균 이하 (wRC+ ${wrcPlus})`);
-    
     if (babip > 0.400) concerns.push(`과도하게 높은 BABIP (${babip.toFixed(3)}) - 운 요소 가능`);
     else if (babip < 0.270) concerns.push(`낮은 BABIP (${babip.toFixed(3)})`);
-    
     if (obp < 0.310) concerns.push(`낮은 출루율 (OBP ${obp.toFixed(3)})`);
     
     return {
@@ -459,21 +412,18 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
     };
   };
 
-  // 선수 데이터에 K-Success Score 추가
   const playersWithScores = useMemo(() => {
     return aaaData
-      .filter(p => p.pa && p.pa >= 200) // 최소 200 PA
+      .filter(p => p.pa && p.pa >= 200)
       .map(player => ({
         ...player,
         kScore: calculateKSuccessScore(player)
       }));
   }, [aaaData]);
 
-  // 필터링 및 정렬
   const filteredPlayers = useMemo(() => {
     let filtered = playersWithScores;
     
-    // 검색 필터
     if (searchTerm) {
       filtered = filtered.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -481,7 +431,6 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
       );
     }
     
-    // 정렬
     filtered.sort((a, b) => {
       if (sortBy === 'score') return b.kScore.score - a.kScore.score;
       if (sortBy === 'wrc_plus') return (b.wrc_plus || 0) - (a.wrc_plus || 0);
@@ -492,23 +441,19 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
     return filtered;
   }, [playersWithScores, searchTerm, sortBy]);
 
-  // 페이지네이션 계산
   const totalPages = Math.ceil(filteredPlayers.length / PLAYERS_PER_PAGE);
   const startIndex = (currentPage - 1) * PLAYERS_PER_PAGE;
   const endIndex = startIndex + PLAYERS_PER_PAGE;
   const currentPlayers = filteredPlayers.slice(startIndex, endIndex);
 
-  // 페이지 변경 시 최상단으로 스크롤
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  // 검색 또는 정렬 변경 시 첫 페이지로
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, sortBy]);
 
-  // 페이지 번호 배열 생성 (최대 7개 표시)
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 7;
@@ -557,6 +502,7 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
           >
             K-Success Score
           </FilterButton>
+     
           <FilterButton 
             active={sortBy === 'wrc_plus'} 
             onClick={() => setSortBy('wrc_plus')}
@@ -609,11 +555,11 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
                   <StatLabel>HR</StatLabel>
                 </StatBox>
                 <StatBox>
-                  <StatValue>{player.k_pct?.toFixed(1) || '-'}%</StatValue>
+                  <StatValue>{player.k_pct?.toFixed(1) || '-'}</StatValue>
                   <StatLabel>K%</StatLabel>
                 </StatBox>
                 <StatBox>
-                  <StatValue>{player.bb_pct?.toFixed(1) || '-'}%</StatValue>
+                  <StatValue>{player.bb_pct?.toFixed(1) || '-'}</StatValue>
                   <StatLabel>BB%</StatLabel>
                 </StatBox>
               </StatsRow>
@@ -635,7 +581,6 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
           ))}
         </PlayerGrid>
 
-        {/* 페이지네이션 */}
         <PaginationContainer>
           <PaginationButton
             disabled={currentPage === 1}
@@ -643,7 +588,7 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
           >
             ← 이전
           </PaginationButton>
-          
+     
           <PageNumbers>
             {getPageNumbers().map((page, index) => (
               typeof page === 'number' ? (
@@ -673,7 +618,6 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
         </PageInfo>
       </ScoutingContainer>
 
-      {/* 상세 모달 */}
       {selectedPlayer && (
         <ModalOverlay onClick={() => setSelectedPlayer(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -710,7 +654,7 @@ function AAAScoutingBoard({ aaaData, kboData, preKboData }: AAAScoutingBoardProp
 
               <div style={{
                 padding: '1.5rem',
-                background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(234, 67, 53, 0.1))',
+                background: 'rgba(66, 133, 244, 0.1)',
                 borderRadius: '12px',
                 marginBottom: '2rem'
               }}>

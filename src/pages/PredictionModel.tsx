@@ -21,7 +21,7 @@ const PredictionContainer = styled.div`
 
 const ResultCard = styled(Card)`
   margin-top: ${props => props.theme.spacing.xl};
-  background: ${props => props.theme.colors.gradient.success};
+  background: ${props => props.theme.colors.bg.secondary};
   text-align: center;
 `;
 
@@ -37,7 +37,8 @@ const SuccessIndicator = styled.div<{ score: number }>`
   padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.lg};
   border-radius: ${props => props.theme.borderRadius.lg};
   background: ${props => 
-    props.score > 80 ? props.theme.colors.success :
+    props.score > 80 ?
+    props.theme.colors.success :
     props.score > 60 ? props.theme.colors.warning :
     props.theme.colors.danger
   };
@@ -55,7 +56,6 @@ const PlayerSelect = styled.select`
   color: ${props => props.theme.colors.text.primary};
   font-size: 1rem;
   cursor: pointer;
-  
   &:focus {
     outline: none;
     border-color: ${props => props.theme.colors.primary};
@@ -113,6 +113,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
     ldPct: '',
     swstrPct: '',
   });
+
   const [prediction, setPrediction] = useState<{
     score: number;
     predictedWrcPlus: number;
@@ -128,7 +129,6 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
   } | null>(null);
   const [selectedAAAPlayer, setSelectedAAAPlayer] = useState<string>('');
 
-  // AAA 선수 선택 시 자동으로 입력
   const handlePlayerSelect = (playerName: string) => {
     setSelectedAAAPlayer(playerName);
     if (playerName) {
@@ -152,7 +152,6 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
   };
 
   const calculateKSuccessScore = () => {
-    // 입력값 파싱
     const wrcPlus = parseFloat(inputs.wrcPlus) || 100;
     const kPct = parseFloat(inputs.kRate) || 20;
     const bbPct = parseFloat(inputs.bbRate) || 8;
@@ -165,57 +164,45 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
     const ldPct = parseFloat(inputs.ldPct) || 20;
     const swstrPct = parseFloat(inputs.swstrPct) || 10;
     
-    // DIKW 분석 기반 가중치
-    // K% 안정성: r ≈ 0.50 (중간 상관관계) - 높은 가중치
-    // BB% 안정성: r ≈ 0.29 (약한 상관관계) - 중간 가중치
-    // wRC+ 전이: r ≈ -0.12 (제한적) - 낮은 가중치
-    
-    // 1. 플레이트 디시플린 점수 (0-35점)
     const kScore = Math.max(0, (25 - kPct) * 1.2);
     const bbScore = Math.max(0, (bbPct - 5) * 1.0);
     const swstrScore = Math.max(0, (15 - swstrPct) * 0.8);
     const disciplineScore = Math.min(35, kScore + bbScore + swstrScore);
     
-    // 2. 파워 및 타구 품질 점수 (0-30점)
     const powerScore = Math.min(15, (hr / pa) * 1000 * 0.75);
     const ldScore = Math.max(0, (ldPct - 18) * 0.4);
     const batQualityScore = Math.min(30, powerScore + ldScore);
     
-    // 3. 출루 및 장타 능력 점수 (0-20점)
     const obpScore = Math.max(0, (obp - 0.300) * 50);
     const slgScore = Math.max(0, (slg - 0.350) * 30);
     const onBaseScore = Math.min(20, obpScore + slgScore);
     
-    // 4. BABIP 안정성 점수 (0-10점)
-    const babipScore = babip > 0.380 ? Math.max(0, 10 - (babip - 0.380) * 30) :
-                       babip < 0.280 ? Math.max(0, (babip - 0.250) * 30) :
-                       10;
-    
-    // 5. 나이 및 경험 점수 (0-10점)
+    const babipScore = babip > 0.380 ?
+      Math.max(0, 10 - (babip - 0.380) * 30) :
+      babip < 0.280 ?
+      Math.max(0, (babip - 0.250) * 30) :
+      10;
+      
     const ageScore = Math.max(0, Math.min(10, (32 - age) * 0.7));
     const paScore = Math.min(5, (pa - 200) / 80);
     const experienceScore = ageScore + paScore;
     
-    // 6. wRC+ 기반 점수 (0-15점) - 낮은 가중치
     const wrcScore = Math.max(0, Math.min(15, (wrcPlus - 80) * 0.25));
     
-    // 총점 계산
     const totalScore = Math.max(0, Math.min(100,
       disciplineScore + batQualityScore + onBaseScore + 
       babipScore + experienceScore + wrcScore
     ));
     
-    // 예상 KBO wRC+
     const disciplineFactor = (100 - kPct * 2 + bbPct * 1.5) / 100;
     const predictedWrcPlus = Math.round(
       wrcPlus * 0.75 + 100 * 0.25 + disciplineFactor * 5
     );
     
-    // 성공 확률
     const successProbability = Math.min(95, Math.max(5, 
       totalScore * 0.9 + (kPct < 20 ? 5 : 0) + (bbPct > 10 ? 5 : 0)
     ));
-    
+
     setPrediction({
       score: Math.round(totalScore),
       predictedWrcPlus,
@@ -238,7 +225,6 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
     return '❌ 높은 리스크';
   };
 
-  // AAA 선수 정렬 (wRC+ 높은 순)
   const sortedAAAPlayers = [...aaaData]
     .filter(p => p.wrc_plus && p.pa && p.pa > 200)
     .sort((a, b) => (b.wrc_plus || 0) - (a.wrc_plus || 0));

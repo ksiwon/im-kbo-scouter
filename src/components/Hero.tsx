@@ -4,16 +4,21 @@ import styled from 'styled-components';
 
 const HeroSection = styled.section`
   min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: ${props => props.theme.colors.bg.secondary};
   text-align: center;
   position: relative;
-  overflow: hidden;
-  
+  overflow-x: hidden;
+
   &::before {
     content: '';
     position: absolute;
@@ -33,7 +38,7 @@ const HeroTitle = styled.h1`
   animation: fadeInUp 1s ease;
   z-index: 1;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-  
+
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -71,28 +76,9 @@ const HeroMeta = styled.div`
   z-index: 1;
 `;
 
-const ScrollHint = styled.div`
-  position: absolute;
-  bottom: 2rem;
-  animation: bounce 2s infinite;
-  z-index: 1;
-  
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-      transform: translateY(0);
-    }
-    40% {
-      transform: translateY(-10px);
-    }
-    60% {
-      transform: translateY(-5px);
-    }
-  }
-`;
-
 function Hero() {
   return (
-    <HeroSection>
+    <HeroSection id="hero">
       <HeroTitle>KBO Foreign Hitter Predictor</HeroTitle>
       <HeroSubtitle>
         데이터로 발견하는 성공의 패턴
@@ -102,11 +88,6 @@ function Hero() {
       <HeroMeta>
         📊 65명의 외국인 타자 분석 | 🎯 2010-2024 시즌 | 🌟 2025 AAA 스카우팅
       </HeroMeta>
-      <ScrollHint>
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="white">
-          <path d="M15 3 L15 20 M15 20 L9 14 M15 20 L21 14" stroke="white" strokeWidth="2" fill="none"/>
-        </svg>
-      </ScrollHint>
     </HeroSection>
   );
 }

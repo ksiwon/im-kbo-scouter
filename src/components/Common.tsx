@@ -4,7 +4,7 @@ import styled from 'styled-components';
 export const Card = styled.div`
   background: ${props => props.theme.colors.bg.card};
   border-radius: ${props => props.theme.borderRadius.xl};
-  padding: ${props => props.theme.spacing.xl};
+  padding: ${props => props.theme.spacing.lg};
   box-shadow: ${props => props.theme.shadows.lg};
   transition: all ${props => props.theme.transitions.normal};
   border: 1px solid rgba(255,255,255,0.05);
@@ -28,10 +28,7 @@ export const CardTitle = styled.h3`
 export const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
-  background: ${props => props.theme.colors.gradient.info};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: ${props => props.theme.colors.primary};
   margin: ${props => props.theme.spacing.md} 0;
 `;
 
