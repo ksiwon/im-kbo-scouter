@@ -14,11 +14,12 @@ import {
 } from 'recharts';
 import { Player } from '../types';
 
-const ChartSection = styled.section`
+const ChartSection = styled.div`
   background: ${(p) => p.theme.colors.bg.tertiary};
   padding: 24px;
   border-radius: 16px;
   box-shadow: ${(p) => p.theme.shadows.lg};
+  width: 100%;
 `;
 
 const Title = styled.h3`

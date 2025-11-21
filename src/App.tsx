@@ -1,8 +1,10 @@
 // src/App.tsx
-import React, { useRef } from 'react';
-import styled from 'styled-components';
+import React, { useRef, useState, useEffect } from 'react';
+import styled, { keyframes } from 'styled-components';
 import { ThemeProvider } from 'styled-components';
 import { GlobalStyle, theme } from './styles/GlobalStyle';
+
+// Components
 import Hero from './components/Hero';
 import StatsOverview from './components/StatsOverview';
 import DistributionChart from './components/DistributionChart';
@@ -11,13 +13,20 @@ import ComparisonChart from './components/ComparisonChart';
 import DeltaDistribution from './components/DeltaDistribution';
 import PlayerList from './components/PlayerList';
 import AAAScoutingBoard from './components/AAAScoutingBoard';
+import DraggableModal from './components/DraggableModal';
+
+// Pages
 import Dashboard from './pages/Dashboard';
 import PredictionModel from './pages/PredictionModel';
 import CorrelationAnalysis from './pages/CorrelationAnalysis';
 
+// Data
 import kboFirstYearData from './data/kbo_first_year_stats_matched.json';
 import preKboData from './data/pre_kbo_stats_matched.json';
 import aaaData from './data/aaa_2025_stats.json';
+import { ANALYSIS_DATA } from './data/analysisData';
+
+// --- Styled Components ---
 
 const AppContainer = styled.div`
   background: ${props => props.theme.colors.bg.primary};
@@ -28,6 +37,19 @@ const AppContainer = styled.div`
   height: 100vh;
   display: flex;
   scroll-snap-type: x mandatory;
+  position: relative;
+  
+  /* 스크롤바 숨기기 (선택적) */
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
 `;
 
 const Section = styled.section<{ dark?: boolean }>`
@@ -37,7 +59,6 @@ const Section = styled.section<{ dark?: boolean }>`
   flex-shrink: 0;
   scroll-snap-align: start;
   overflow-y: auto;
-  /* 3. Padding 축소 */
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
@@ -46,6 +67,7 @@ const Section = styled.section<{ dark?: boolean }>`
   background: ${props => props.dark 
     ? props.theme.colors.bg.secondary 
     : props.theme.colors.bg.primary};
+  position: relative;
   
   @media (max-width: 768px) {
     padding: 2rem 1rem;
@@ -54,7 +76,6 @@ const Section = styled.section<{ dark?: boolean }>`
 
 const SectionTitle = styled.h2`
   font-size: 3rem;
-  /* 3. Margin 축소 */
   margin-bottom: 1.5rem;
   text-align: center;
   -webkit-background-clip: text;
@@ -78,7 +99,6 @@ const SectionText = styled.p`
   text-align: center;
   max-width: 800px;
   line-height: 1.8;
-  /* 3. Margin 축소 */
   margin-bottom: 1.5rem;
   flex-shrink: 0;
 
@@ -90,125 +110,159 @@ const SectionText = styled.p`
 const ContentBox = styled.div`
   max-width: 80%;
   width: 100%;
-  /* 3. Margin 축소 */
   margin: 1rem auto;
-`;
-
-const FooterText = styled.p`
-  text-align: center;
-  font-size: 0.9rem;
-  line-height: 1.6;
 `;
 
 const NavigationBar = styled.nav`
   position: fixed;
-  bottom: 0.5rem;
+  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(30, 39, 73, 0.98);
-  border-radius: ${props => props.theme.borderRadius.lg};
-  border: 1px solid rgb(255, 255, 255, 0.3);
+  background: rgba(30, 39, 73, 0.9);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   display: flex;
-  justify-content: center;
-  /* 2. 네비게이션 바 글자 잘림 해결 */
-  gap: 0.25rem;
+  gap: 1.5rem;
   z-index: 100;
-  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 
   @media (max-width: 768px) {
-    gap: 0.1rem;
-    padding: 0.5rem 0.25rem;
-    justify-content: space-around;
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    width: 90%;
+    justify-content: space-between;
   }
 `;
 
-const NavLink = styled.a`
-  color: ${props => props.theme.colors.text.secondary};
-  text-decoration: none;
-  /* 2. 네비게이션 바 글자 잘림 해결 */
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+const NavLink = styled.button<{ active?: boolean }>`
+  background: none;
+  border: none;
+  color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.text.secondary};
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  /* 2. 네비게이션 바 글자 잘림 해결 */
-  padding: 0.5rem 0.75rem;
-  border-radius: ${props => props.theme.borderRadius.md};
-  flex-shrink: 0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
   
   &:hover {
     color: ${props => props.theme.colors.primary};
-    background: rgba(66, 133, 244, 0.1);
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.4rem;
   }
 `;
 
-const ScrollArrow = styled.button<{ direction: 'left' | 'right' }>`
+// --- Scroll Indicator Arrows ---
+
+const bounceLeft = keyframes`
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-10px); }
+`;
+
+const bounceRight = keyframes`
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+`;
+
+const ArrowButton = styled.div<{ direction: 'left' | 'right' }>`
   position: fixed;
   top: 50%;
+  ${props => props.direction === 'left' ? 'left: 20px;' : 'right: 20px;'}
   transform: translateY(-50%);
-  ${props => props.direction === 'left' ? 'left: 1rem;' : 'right: 1rem;'}
-  z-index: 101;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
+  background: transparent;
   color: white;
-  font-family: sans-serif;
-  font-size: 1.5rem;
-  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(5px);
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  animation: ${props => props.direction === 'left' ? bounceLeft : bounceRight} 2s infinite;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
+  @media (max-width: 768px) {
+    display: none; /* 모바일에서는 화살표 숨김 (터치 스크롤이 직관적임) */
   }
 `;
 
-
 function App() {
   const appContainerRef = useRef<HTMLDivElement>(null);
+  const [activeSection, setActiveSection] = useState<string>('hero');
+  
+  // 스크롤 화살표 상태
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+
+  useEffect(() => {
+    const currentSection = document.getElementById(activeSection);
+    if (currentSection) {
+      currentSection.scrollTop = 0;
+    }
+  }, [activeSection]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // [수정] id가 있는 경우에만 activeSection을 업데이트하여 
+          // 내부 컴포넌트(예: chart의 section)가 잡히는 것을 방지
+          if (entry.isIntersecting && entry.target.id) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        root: appContainerRef.current,
+        threshold: 0.5
+      }
+    );
+
+    // appContainerRef 안의 직계 자식 section들만 관찰하도록 수정하는 것이 좋으나,
+    // querySelectorAll('section')을 쓰되 위에서 id 체크를 추가함.
+    const sections = document.querySelectorAll('section');
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  // 스크롤 이벤트 핸들러 (화살표 표시 여부 결정)
+  const handleScroll = () => {
+    if (appContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = appContainerRef.current;
+      
+      // 맨 왼쪽인지 확인 (여유값 10px)
+      setShowLeftArrow(scrollLeft > 10);
+      
+      // 맨 오른쪽인지 확인 (여유값 10px)
+      // scrollWidth - clientWidth 가 최대 스크롤 가능 값
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  // 초기 로드 및 리사이즈 시 스크롤 상태 체크
+  useEffect(() => {
+    const checkScroll = () => handleScroll();
+    
+    window.addEventListener('resize', checkScroll);
+    // 초기 실행
+    checkScroll();
+    
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
-    if (!el) return;
-
-    // 1) 대상 섹션 자체의 세로 스크롤을 최상단으로
-    (el as HTMLElement).scrollTop = 0;
-
-    // 2) 섹션 내부에 스크롤 가능한 자식 노드들도 함께 초기화
-    //   - overflow가 걸려 세로 스크롤바가 생기는 컨테이너들을 모두 0으로 리셋
-    const scrollables = Array.from(
-      el.querySelectorAll<HTMLElement>('*')
-    ).filter(n => n.scrollHeight > n.clientHeight);
-    scrollables.forEach(n => (n.scrollTop = 0));
-
-    // 3) 뷰포트 상단으로 해당 섹션 부드럽게 스크롤
-    el.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-      inline: 'nearest',
-    });
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+    }
   };
 
-  const handleNavClick = (direction: 'left' | 'right') => {
+  const scrollByDirection = (direction: 'left' | 'right') => {
     if (appContainerRef.current) {
-      const scrollAmount = direction === 'left' 
-        ? -appContainerRef.current.clientWidth 
-        : appContainerRef.current.clientWidth;
-        
+      const { clientWidth } = appContainerRef.current;
       appContainerRef.current.scrollBy({
-        left: scrollAmount,
+        left: direction === 'left' ? -clientWidth : clientWidth,
         behavior: 'smooth'
       });
     }
@@ -218,21 +272,30 @@ function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       
-      <ScrollArrow direction="left" onClick={() => handleNavClick('left')}>
-        ←
-      </ScrollArrow>
-      <ScrollArrow direction="right" onClick={() => handleNavClick('right')}>
-        →
-      </ScrollArrow>
+      {/* 분석 모달 */}
+      {activeSection !== 'hero' && (
+        <DraggableModal data={ANALYSIS_DATA[activeSection]} />
+      )}
 
-      <AppContainer ref={appContainerRef}>        
+      {/* 스크롤 화살표 */}
+      {showLeftArrow && (
+        <ArrowButton direction="left" onClick={() => scrollByDirection('left')}>
+          ‹
+        </ArrowButton>
+      )}
+      {showRightArrow && (
+        <ArrowButton direction="right" onClick={() => scrollByDirection('right')}>
+          ›
+        </ArrowButton>
+      )}
+
+      <AppContainer ref={appContainerRef} onScroll={handleScroll}>        
         <Hero />
 
         <Section id="overview">
           <SectionTitle>📊 데이터 개요</SectionTitle>
           <SectionText>
-            2010년부터 2024년까지 KBO에 입단한 65명의 외국인 타자들의 데이터를 
-            분석했습니다.
+            2010년부터 2024년까지 KBO에 입단한 65명의 외국인 타자들의 데이터를 분석했습니다.
             <br />
             각 선수의 KBO 입단 전 성적과 KBO 첫 해 성적을 비교하여 성공 패턴을 찾아냅니다.
           </SectionText>
@@ -289,8 +352,7 @@ function App() {
         <Section id="analysis">
           <SectionTitle>📈 성적 분포 변화</SectionTitle>
           <SectionText>
-            KBO 입단 
-            전후로 선수들의 주요 지표가 어떻게 변화하는지 살펴봅니다.
+            KBO 입단 전후로 선수들의 주요 지표가 어떻게 변화하는지 살펴봅니다.
             <br />
             평균적으로 타석은 증가하지만, wRC+는 리그 환경 차이로 인해 변동이 큽니다.
           </SectionText>
@@ -301,16 +363,16 @@ function App() {
             />
           </ContentBox>
           <ContentBox>
-            <DistributionChart 
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-          <ContentBox>
-            <DeltaDistribution 
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+              <DistributionChart 
+                kboData={kboFirstYearData.players}
+                preKboData={preKboData.players}
+              />
+              <DeltaDistribution 
+                kboData={kboFirstYearData.players}
+                preKboData={preKboData.players}
+              />
+            </div>
           </ContentBox>
         </Section>
 
@@ -346,24 +408,14 @@ function App() {
           </ContentBox>
         </Section>
         
-        <Section as="footer" dark id="footer-section">
-          <FooterText>
-            📊 KBO Foreign Hitter Predictor / 2025 Siwon.
-            All Rights Reserved.
-            <br /><br />
-            Data Source: FanGraphs.com
-            <br /><br />
-          </FooterText>
-        </Section>
-
         <NavigationBar>
-          <NavLink onClick={() => scrollToSection('hero')}>🏠 홈</NavLink>
-          <NavLink onClick={() => scrollToSection('overview')}>📊 개요</NavLink>
-          <NavLink onClick={() => scrollToSection('players')}>🏆 Top Players</NavLink>
-          <NavLink onClick={() => scrollToSection('correlation')}>🔗 상관 관계</NavLink>
-          <NavLink onClick={() => scrollToSection('analysis')}>📈 Graphs</NavLink>
-          <NavLink onClick={() => scrollToSection('aaa-scouting')}>🎯 AAA 스카우팅</NavLink>
-          <NavLink onClick={() => scrollToSection('prediction')}>🔮 예측 모델</NavLink>
+          <NavLink active={activeSection === 'hero'} onClick={() => scrollToSection('hero')}>🏠 홈</NavLink>
+          <NavLink active={activeSection === 'overview'} onClick={() => scrollToSection('overview')}>📊 개요</NavLink>
+          <NavLink active={activeSection === 'players'} onClick={() => scrollToSection('players')}>🏆 Top Players</NavLink>
+          <NavLink active={activeSection === 'correlation'} onClick={() => scrollToSection('correlation')}>🔗 상관 관계</NavLink>
+          <NavLink active={activeSection === 'analysis'} onClick={() => scrollToSection('analysis')}>📈 분석</NavLink>
+          <NavLink active={activeSection === 'aaa-scouting'} onClick={() => scrollToSection('aaa-scouting')}>🎯 AAA 스카우팅</NavLink>
+          <NavLink active={activeSection === 'prediction'} onClick={() => scrollToSection('prediction')}>🔮 예측 모델</NavLink>
         </NavigationBar>
       </AppContainer>
     </ThemeProvider>

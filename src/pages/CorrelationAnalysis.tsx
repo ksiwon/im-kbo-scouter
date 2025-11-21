@@ -7,8 +7,12 @@ import { Player } from '../types';
 
 const AnalysisContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: ${props => props.theme.spacing.xl};
+  
+  > * {
+    flex: 1;
+  }
 `;
 
 const FindingsList = styled.div`
@@ -61,7 +65,7 @@ function CorrelationAnalysis({ kboData, preKboData }: CorrelationAnalysisProps) 
             color: theme.colors.chart.green,
             borderLeft: `3px solid ${theme.colors.chart.green}`
           }}>
-            <strong>핵심 인사이트:</strong> 플레이트 디시플린 지표(K%, BB%)가 
+            <strong>핵심 인사이트:</strong> 선구 관련 지표(K%, BB%)가 
             환경 의존적 지표(wRC+)보다 더 나은 안정성을 보임
           </div>
         </FindingsList>

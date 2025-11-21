@@ -84,7 +84,6 @@ function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
     { key: 'hr' as const, label: 'HR' },
   ];
 
-  // 델타(변화량) 계산
   const getDeltaData = () => {
     const deltas: number[] = [];
 
@@ -96,14 +95,13 @@ function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
       }
     });
 
-    // 히스토그램 생성
     const min = Math.min(...deltas);
     const max = Math.max(...deltas);
     const binCount = 10;
     const binSize = (max - min) / binCount;
     
     const bins = Array.from({ length: binCount }, (_, i) => ({
-      range: `${(min + i * binSize).toFixed(1)}~${(min + (i + 1) * binSize).toFixed(1)}`,
+      range: `${(min + i * binSize).toFixed(1)} ~ ${(min + (i + 1) * binSize).toFixed(1)}`,
       count: 0,
       center: min + (i + 0.5) * binSize,
     }));
@@ -120,7 +118,6 @@ function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
 
   const { bins, deltas } = getDeltaData();
 
-  // 통계 계산
   const mean = deltas.reduce((sum, d) => sum + d, 0) / deltas.length;
   const sortedDeltas = [...deltas].sort((a, b) => a - b);
   const median = sortedDeltas.length % 2 
@@ -151,7 +148,14 @@ function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
       <ResponsiveContainer width="100%" height={400}>
         <BarChart data={bins}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
-          <XAxis dataKey="range" stroke="#9aa0a6" angle={-45} textAnchor="end" height={100} />
+          <XAxis 
+            dataKey="range" 
+            stroke="#9aa0a6" 
+            angle={-45} 
+            textAnchor="end" 
+            height={80}
+            tick={{ fontSize: 10 }} // 폰트 사이즈 수정 요청 반영
+          />
           <YAxis stroke="#9aa0a6" />
           <Tooltip 
             contentStyle={{ 
@@ -186,19 +190,19 @@ function DeltaDistribution({ kboData, preKboData }: DeltaDistributionProps) {
         </StatItem>
         <StatItem>
           <StatLabel>표준편차</StatLabel>
-          <StatValue>{format(std)}</StatValue>
+          <StatValue positive={true}>{format(std)}</StatValue>
         </StatItem>
         <StatItem>
           <StatLabel>최소값</StatLabel>
-          <StatValue>{format(Math.min(...deltas))}</StatValue>
+          <StatValue positive={false}>{format(Math.min(...deltas))}</StatValue>
         </StatItem>
         <StatItem>
           <StatLabel>최대값</StatLabel>
-          <StatValue>{format(Math.max(...deltas))}</StatValue>
+          <StatValue positive={true}>{format(Math.max(...deltas))}</StatValue>
         </StatItem>
         <StatItem>
           <StatLabel>샘플 수</StatLabel>
-          <StatValue>{deltas.length}명</StatValue>
+          <StatValue positive={true}>{deltas.length}명</StatValue>
         </StatItem>
       </StatsBox>
     </ChartContainer>

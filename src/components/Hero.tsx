@@ -40,14 +40,8 @@ const HeroTitle = styled.h1`
   text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 
   @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   @media (max-width: 768px) {
@@ -76,6 +70,18 @@ const HeroMeta = styled.div`
   z-index: 1;
 `;
 
+// Footer를 Hero 하단에 배치
+const FooterText = styled.div`
+  position: absolute;
+  bottom: 5rem;
+  font-size: 0.9rem;
+  color: ${props => props.theme.colors.text.disabled};
+  line-height: 1.6;
+  z-index: 1;
+  opacity: 0.7;
+  animation: fadeIn 2s ease;
+`;
+
 function Hero() {
   return (
     <HeroSection id="hero">
@@ -88,6 +94,12 @@ function Hero() {
       <HeroMeta>
         📊 65명의 외국인 타자 분석 | 🎯 2010-2024 시즌 | 🌟 2025 AAA 스카우팅
       </HeroMeta>
+      
+      <FooterText>
+        📊 KBO Foreign Hitter Predictor / 2025 Siwon. All Rights Reserved.
+        <br />
+        Data Source: FanGraphs.com
+      </FooterText>
     </HeroSection>
   );
 }
