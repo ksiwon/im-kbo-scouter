@@ -7,7 +7,7 @@ const ModalContainer = styled.div.attrs<{ x: number, y: number }>(props => ({
   style: {
     transform: `translate(${props.x}px, ${props.y}px)`,
   }
-}))<{ x: number, y: number, isOpen: boolean }>`
+})) <{ x: number, y: number, isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
@@ -113,9 +113,9 @@ const DraggableModal: React.FC<DraggableModalProps> = ({ data }) => {
 
   useEffect(() => {
     // 우측 상단 위치 계산 (여백 20px, 상단 20px)
-    setPosition({ 
-      x: window.innerWidth - 370, 
-      y: 20 
+    setPosition({
+      x: window.innerWidth - 370,
+      y: 20
     });
   }, []);
 
@@ -163,7 +163,7 @@ const DraggableModal: React.FC<DraggableModalProps> = ({ data }) => {
     <ModalContainer x={position.x} y={position.y} isOpen={isOpen}>
       <Header onMouseDown={handleMouseDown}>
         <Title>
-          <span>🧐 Analyst Note</span>
+          <span>Analyst Note</span>
         </Title>
         <ToggleButton onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}>
           {isOpen ? '−' : '+'}

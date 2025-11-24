@@ -6,7 +6,6 @@ import { GlobalStyle, theme } from './styles/GlobalStyle';
 
 // Components
 import Hero from './components/Hero';
-import StatsOverview from './components/StatsOverview';
 import DistributionChart from './components/DistributionChart';
 import CorrelationChart from './components/CorrelationChart';
 import ComparisonChart from './components/ComparisonChart';
@@ -14,6 +13,7 @@ import DeltaDistribution from './components/DeltaDistribution';
 import PlayerList from './components/PlayerList';
 import AAAScoutingBoard from './components/AAAScoutingBoard';
 import DraggableModal from './components/DraggableModal';
+import AAADashboard from './components/AAADashboard';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -64,8 +64,8 @@ const Section = styled.section<{ dark?: boolean }>`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background: ${props => props.dark 
-    ? props.theme.colors.bg.secondary 
+  background: ${props => props.dark
+    ? props.theme.colors.bg.secondary
     : props.theme.colors.bg.primary};
   position: relative;
   
@@ -104,6 +104,24 @@ const SectionText = styled.p`
 
   @media (max-width: 768px) {
     font-size: 1rem;
+  }
+`;
+
+const SubSectionTitle = styled.h3`
+  font-size: 1.5rem;
+  color: ${props => props.theme.colors.text.primary};
+  margin-bottom: 1rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  span {
+    font-size: 1rem;
+    color: ${props => props.theme.colors.text.secondary};
+    font-weight: normal;
+    margin-left: 0.5rem;
   }
 `;
 
@@ -187,7 +205,7 @@ const ArrowButton = styled.div<{ direction: 'left' | 'right' }>`
 function App() {
   const appContainerRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<string>('hero');
-  
+
   // 스크롤 화살표 상태
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -230,10 +248,10 @@ function App() {
   const handleScroll = () => {
     if (appContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = appContainerRef.current;
-      
+
       // 맨 왼쪽인지 확인 (여유값 10px)
       setShowLeftArrow(scrollLeft > 10);
-      
+
       // 맨 오른쪽인지 확인 (여유값 10px)
       // scrollWidth - clientWidth 가 최대 스크롤 가능 값
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
@@ -243,11 +261,11 @@ function App() {
   // 초기 로드 및 리사이즈 시 스크롤 상태 체크
   useEffect(() => {
     const checkScroll = () => handleScroll();
-    
+
     window.addEventListener('resize', checkScroll);
     // 초기 실행
     checkScroll();
-    
+
     return () => window.removeEventListener('resize', checkScroll);
   }, []);
 
@@ -271,7 +289,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
-      
+
       {/* 분석 모달 */}
       {activeSection !== 'hero' && (
         <DraggableModal data={ANALYSIS_DATA[activeSection]} />
@@ -289,26 +307,33 @@ function App() {
         </ArrowButton>
       )}
 
-      <AppContainer ref={appContainerRef} onScroll={handleScroll}>        
+      <AppContainer ref={appContainerRef} onScroll={handleScroll}>
         <Hero />
 
         <Section id="overview">
           <SectionTitle>📊 데이터 개요</SectionTitle>
           <SectionText>
-            2010년부터 2024년까지 KBO에 입단한 65명의 외국인 타자들의 데이터를 분석했습니다.
+            2010-2024 KBO 외국인 타자들의 성공 패턴을 분석하고,
             <br />
-            각 선수의 KBO 입단 전 성적과 KBO 첫 해 성적을 비교하여 성공 패턴을 찾아냅니다.
+            이를 바탕으로 2025년 AAA 선수들의 KBO 성공 가능성을 예측합니다.
           </SectionText>
+
           <ContentBox>
-            <Dashboard 
+            <SubSectionTitle>
+              KBO 외국인 타자 데이터 <span>(2010-2024)</span>
+            </SubSectionTitle>
+            <Dashboard
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
             />
           </ContentBox>
+
           <ContentBox>
-            <StatsOverview 
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
+            <SubSectionTitle>
+              2025 AAA 스카우팅 리포트 <span>(200PA 이상 158명)</span>
+            </SubSectionTitle>
+            <AAADashboard
+              aaaData={aaaData.players}
             />
           </ContentBox>
         </Section>
@@ -321,14 +346,14 @@ function App() {
             클릭하면 상세 정보를 볼 수 있습니다.
           </SectionText>
           <ContentBox>
-            <PlayerList 
+            <PlayerList
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
             />
           </ContentBox>
         </Section>
-     
-        <Section dark id="correlation">
+
+        <Section id="correlation">
           <SectionTitle>🔗 상관 관계 분석</SectionTitle>
           <SectionText>
             KBO 입단 전 지표 중 어떤 것이 KBO에서의 성공을 예측할 수 있을까요?
@@ -336,20 +361,20 @@ function App() {
             K%와 BB% 같은 규율 지표는 안정적이지만, wRC+는 환경 의존적입니다.
           </SectionText>
           <ContentBox>
-            <CorrelationAnalysis 
+            <CorrelationAnalysis
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
             />
           </ContentBox>
           <ContentBox>
-            <CorrelationChart 
+            <CorrelationChart
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
             />
           </ContentBox>
         </Section>
 
-        <Section id="analysis">
+        <Section dark id="analysis">
           <SectionTitle>📈 성적 분포 변화</SectionTitle>
           <SectionText>
             KBO 입단 전후로 선수들의 주요 지표가 어떻게 변화하는지 살펴봅니다.
@@ -357,18 +382,18 @@ function App() {
             평균적으로 타석은 증가하지만, wRC+는 리그 환경 차이로 인해 변동이 큽니다.
           </SectionText>
           <ContentBox>
-            <ComparisonChart 
+            <ComparisonChart
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
             />
           </ContentBox>
           <ContentBox>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-              <DistributionChart 
+              <DistributionChart
                 kboData={kboFirstYearData.players}
                 preKboData={preKboData.players}
               />
-              <DeltaDistribution 
+              <DeltaDistribution
                 kboData={kboFirstYearData.players}
                 preKboData={preKboData.players}
               />
@@ -376,7 +401,7 @@ function App() {
           </ContentBox>
         </Section>
 
-        <Section dark id="aaa-scouting">
+        <Section id="aaa-scouting">
           <SectionTitle>🎯 2025 AAA 스카우팅 보드</SectionTitle>
           <SectionText>
             158명의 2025 AAA 선수들을 K-Success Score로 평가합니다.
@@ -384,7 +409,7 @@ function App() {
             DIKW 분석 기반: K% 안정성(r≈0.50), BB% 안정성(r≈0.29), wRC+ 제한적 전이(r≈-0.12)
           </SectionText>
           <ContentBox>
-            <AAAScoutingBoard 
+            <AAAScoutingBoard
               aaaData={aaaData.players}
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
@@ -392,7 +417,7 @@ function App() {
           </ContentBox>
         </Section>
 
-        <Section id="prediction">
+        <Section dark id="prediction">
           <SectionTitle>🔮 K-Success Score 예측 모델</SectionTitle>
           <SectionText>
             선수의 Pre-KBO 통계를 입력하거나 AAA 선수를 선택하여 KBO 성적을 예측합니다.
@@ -400,14 +425,14 @@ function App() {
             플레이트 디시플린 지표가 환경 의존적 지표보다 더 나은 안정성을 보입니다.
           </SectionText>
           <ContentBox>
-            <PredictionModel 
+            <PredictionModel
               kboData={kboFirstYearData.players}
               preKboData={preKboData.players}
               aaaData={aaaData.players}
             />
           </ContentBox>
         </Section>
-        
+
         <NavigationBar>
           <NavLink active={activeSection === 'hero'} onClick={() => scrollToSection('hero')}>🏠 홈</NavLink>
           <NavLink active={activeSection === 'overview'} onClick={() => scrollToSection('overview')}>📊 개요</NavLink>

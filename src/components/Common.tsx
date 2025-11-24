@@ -3,8 +3,8 @@ import styled from 'styled-components';
 
 export const Card = styled.div`
   background: ${props => props.theme.colors.bg.card};
-  border-radius: ${props => props.theme.borderRadius.xl};
-  padding: ${props => props.theme.spacing.lg};
+  border-radius: ${props => props.theme.borderRadius.lg};
+  padding: ${props => props.theme.spacing.md};
   box-shadow: ${props => props.theme.shadows.lg};
   transition: all ${props => props.theme.transitions.normal};
   border: 1px solid rgba(255,255,255,0.05);
@@ -29,7 +29,7 @@ export const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
   color: ${props => props.theme.colors.primary};
-  margin: ${props => props.theme.spacing.md} 0;
+  margin: ${props => props.theme.spacing.sm} 0;
 `;
 
 export const StatLabel = styled.div`

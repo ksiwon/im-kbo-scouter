@@ -69,16 +69,6 @@ const InfoValue = styled.div<{ color?: string }>`
   color: ${props => props.color || props.theme.colors.primary};
 `;
 
-const InsightBox = styled.div`
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: ${props => props.theme.colors.bg.card};
-  border-left: 4px solid ${props => props.theme.colors.primary};
-  border-radius: ${props => props.theme.borderRadius.md};
-  color: ${props => props.theme.colors.text.secondary};
-  line-height: 1.6;
-`;
-
 interface CorrelationChartProps {
   kboData: Player[];
   preKboData: Player[];
@@ -145,18 +135,6 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
     if (absR >= 0.4) return '중간 상관관계';
     if (absR >= 0.2) return '약한 상관관계';
     return '거의 무상관';
-  };
-
-  const getInsight = () => {
-    if (selectedMetric === 'k_pct') {
-      return `삼진율(K%)은 상관계수 r ≈ ${correlation.toFixed(2)}로 중간 정도의 안정성을 보입니다. 이는 타자의 컨택 능력이 리그를 옮겨도 어느 정도 유지된다는 의미입니다.`;
-    } else if (selectedMetric === 'bb_pct') {
-      return `볼넷율(BB%)은 상관계수 r ≈ ${correlation.toFixed(2)}로 K%보다 약한 안정성을 보입니다. 선구안은 리그 환경에 따라 변동이 큰 편입니다.`;
-    } else if (selectedMetric === 'wrc_plus') {
-      return `wRC+는 상관계수 r ≈ ${correlation.toFixed(2)}로 매우 약한 상관관계를 보입니다. 이는 리그/구장/시대 효과로 인해 환경 의존적 지표는 직접적인 이전이 어렵다는 것을 의미합니다.`;
-    } else {
-      return `홈런은 상관계수 r ≈ ${correlation.toFixed(2)}의 상관관계를 보입니다. 장타력은 어느 정도 이전되지만 타선 순서와 구장 환경의 영향을 받습니다.`;
-    }
   };
 
   return (
@@ -244,10 +222,6 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
           </InfoValue>
         </InfoItem>
       </CorrelationInfo>
-
-      <InsightBox>
-        💡 <strong>인사이트:</strong> {getInsight()}
-      </InsightBox>
     </ChartContainer>
   );
 }
