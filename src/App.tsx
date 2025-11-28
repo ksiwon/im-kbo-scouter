@@ -406,9 +406,9 @@ function App() {
         <Section id="kfs-explanation">
           <SectionTitle>📝 KFS Score란 무엇인가?</SectionTitle>
           <SectionText>
-            KBO Foreigner Success Score는 15년간의 외국인 타자 데이터를 분석하여
+            KBO Foreigner Success Score는 15년간의 외국인 타자 데이터를 기반으로
             <br />
-            한국 야구에서의 성공 가능성을 예측하는 독자적인 알고리즘입니다.
+            Optimization하여 KBO에서의 성공 가능성을 예측하는 새로운 지표입니다.
           </SectionText>
           <ContentBox>
             <KFSExplanation />

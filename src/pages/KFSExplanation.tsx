@@ -172,7 +172,7 @@ function KFSExplanation() {
             </FactorTitle>
             <StatLabel>
               조정 득점 생산력입니다.
-              중요한 지표지만, 리그 적응 변수를 고려하여 가중치를 상대적으로 낮게 설정했습니다.
+              중요한 지표지만, 환경 의존적 지표이기에 상대적으로 가중치가 낮습니다.
             </StatLabel>
           </FactorCard>
         </Grid>
