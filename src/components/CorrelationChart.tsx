@@ -75,13 +75,17 @@ interface CorrelationChartProps {
 }
 
 function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
-  const [selectedMetric, setSelectedMetric] = useState<'wrc_plus' | 'k_pct' | 'bb_pct' | 'hr'>('wrc_plus');
+  const [selectedMetric, setSelectedMetric] = useState<'wrc_plus' | 'k_pct' | 'bb_pct' | 'hr' | 'gdp' | 'babip' | 'obp' | 'slg'>('wrc_plus');
 
   const metrics = [
     { key: 'wrc_plus' as const, label: 'wRC+', description: '가중 득점 생산력' },
     { key: 'k_pct' as const, label: 'K%', description: '삼진율' },
     { key: 'bb_pct' as const, label: 'BB%', description: '볼넷율' },
     { key: 'hr' as const, label: 'HR', description: '홈런' },
+    { key: 'gdp' as const, label: 'GDP', description: '병살타' },
+    { key: 'babip' as const, label: 'BABIP', description: '인플레이 타구 타율' },
+    { key: 'obp' as const, label: 'OBP', description: '출루율' },
+    { key: 'slg' as const, label: 'SLG', description: '장타율' },
   ];
 
   // 상관관계 데이터 생성
@@ -131,9 +135,9 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
 
   const getCorrelationStrength = (r: number) => {
     const absR = Math.abs(r);
-    if (absR >= 0.7) return '강한 상관관계';
-    if (absR >= 0.4) return '중간 상관관계';
-    if (absR >= 0.2) return '약한 상관관계';
+    if (absR >= 0.3) return '강한 상관관계';
+    if (absR >= 0.2) return '중간 상관관계';
+    if (absR >= 0.1) return '약한 상관관계';
     return '거의 무상관';
   };
 

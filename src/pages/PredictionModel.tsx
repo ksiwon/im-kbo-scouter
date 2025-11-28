@@ -12,6 +12,7 @@ import {
   Button 
 } from '../components/Common';
 import { Player } from '../types';
+import { calculateKFSScore } from '../utils/kfsScore';
 
 const PredictionContainer = styled.div`
   display: flex;
@@ -27,7 +28,7 @@ const ResultCard = styled(Card)`
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: ${props => props.theme.spacing.lg};
   margin-top: ${props => props.theme.spacing.lg};
 `;
@@ -37,9 +38,9 @@ const SuccessIndicator = styled.div<{ score: number }>`
   padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.lg};
   border-radius: ${props => props.theme.borderRadius.lg};
   background: ${props => 
-    props.score > 80 ?
+    props.score > 50 ?
     props.theme.colors.success :
-    props.score > 60 ? props.theme.colors.warning :
+    props.score > 35 ? props.theme.colors.warning :
     props.theme.colors.danger
   };
   color: white;
@@ -112,6 +113,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
     slg: '',
     ldPct: '',
     swstrPct: '',
+    gdp: '',
   });
 
   const [prediction, setPrediction] = useState<{
@@ -146,83 +148,34 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
           slg: (player.slg || 0).toString(),
           ldPct: (player.ld_pct || 0).toString(),
           swstrPct: (player.swstr_pct || 0).toString(),
+          gdp: (player.gdp || 0).toString(),
         });
       }
     }
   };
 
   const calculateKSuccessScore = () => {
-    const wrcPlus = parseFloat(inputs.wrcPlus) || 100;
-    const kPct = parseFloat(inputs.kRate) || 20;
-    const bbPct = parseFloat(inputs.bbRate) || 8;
-    const hr = parseFloat(inputs.hr) || 10;
-    const pa = parseFloat(inputs.pa) || 300;
-    const age = parseFloat(inputs.age) || 28;
-    const babip = parseFloat(inputs.babip) || 0.300;
-    const obp = parseFloat(inputs.obp) || 0.320;
-    const slg = parseFloat(inputs.slg) || 0.400;
-    const ldPct = parseFloat(inputs.ldPct) || 20;
-    const swstrPct = parseFloat(inputs.swstrPct) || 10;
-    
-    const kScore = Math.max(0, (25 - kPct) * 1.2);
-    const bbScore = Math.max(0, (bbPct - 5) * 1.0);
-    const swstrScore = Math.max(0, (15 - swstrPct) * 0.8);
-    const disciplineScore = Math.min(35, kScore + bbScore + swstrScore);
-    
-    const powerScore = Math.min(15, (hr / pa) * 1000 * 0.75);
-    const ldScore = Math.max(0, (ldPct - 18) * 0.4);
-    const batQualityScore = Math.min(30, powerScore + ldScore);
-    
-    const obpScore = Math.max(0, (obp - 0.300) * 50);
-    const slgScore = Math.max(0, (slg - 0.350) * 30);
-    const onBaseScore = Math.min(20, obpScore + slgScore);
-    
-    const babipScore = babip > 0.380 ?
-      Math.max(0, 10 - (babip - 0.380) * 30) :
-      babip < 0.280 ?
-      Math.max(0, (babip - 0.250) * 30) :
-      10;
-      
-    const ageScore = Math.max(0, Math.min(10, (32 - age) * 0.7));
-    const paScore = Math.min(5, (pa - 200) / 80);
-    const experienceScore = ageScore + paScore;
-    
-    const wrcScore = Math.max(0, Math.min(15, (wrcPlus - 80) * 0.25));
-    
-    const totalScore = Math.max(0, Math.min(100,
-      disciplineScore + batQualityScore + onBaseScore + 
-      babipScore + experienceScore + wrcScore
-    ));
-    
-    const disciplineFactor = (100 - kPct * 2 + bbPct * 1.5) / 100;
-    const predictedWrcPlus = Math.round(
-      wrcPlus * 0.75 + 100 * 0.25 + disciplineFactor * 5
-    );
-    
-    const successProbability = Math.min(95, Math.max(5, 
-      totalScore * 0.9 + (kPct < 20 ? 5 : 0) + (bbPct > 10 ? 5 : 0)
-    ));
-
-    setPrediction({
-      score: Math.round(totalScore),
-      predictedWrcPlus,
-      successProbability: Math.round(successProbability),
-      breakdown: {
-        discipline: Math.round(disciplineScore),
-        power: Math.round(batQualityScore),
-        onBase: Math.round(onBaseScore),
-        babip: Math.round(babipScore),
-        experience: Math.round(experienceScore),
-        wrc: Math.round(wrcScore),
-      }
+    const result = calculateKFSScore({
+      wrcPlus: parseFloat(inputs.wrcPlus),
+      kPct: parseFloat(inputs.kRate),
+      bbPct: parseFloat(inputs.bbRate),
+      hr: parseFloat(inputs.hr),
+      pa: parseFloat(inputs.pa),
+      babip: parseFloat(inputs.babip),
+      obp: parseFloat(inputs.obp),
+      slg: parseFloat(inputs.slg),
+      gdp: parseFloat(inputs.gdp),
     });
+
+    setPrediction(result);
   };
 
   const getSuccessMessage = (score: number) => {
-    if (score > 80) return '🌟 매우 높은 성공 가능성';
-    if (score > 65) return '✅ 높은 성공 가능성';
-    if (score > 50) return '⚠️ 중간 정도의 리스크';
-    return '❌ 높은 리스크';
+    if (score >= 65) return '💎 S급: 리그 폭격 가능성 (Elite)';
+    if (score >= 50) return '🌟 A급: 매우 높은 성공 가능성 (Low Risk)';
+    if (score >= 35) return '✅ B급: 준수한 활약 예상 (Moderate)';
+    if (score >= 20) return '⚠️ C급: 적응 변수 존재 (High Risk)';
+    return '❌ D급: 매우 높은 실패 위험 (Critical)';
   };
 
   const sortedAAAPlayers = [...aaaData]
@@ -307,13 +260,14 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
             />
           </InputGroup>
           
+
           <InputGroup>
-            <Label>나이</Label>
+            <Label>GDP (병살타)</Label>
             <Input
               type="number"
-              placeholder="예: 26"
-              value={inputs.age}
-              onChange={e => setInputs({...inputs, age: e.target.value})}
+              placeholder="예: 12"
+              value={inputs.gdp}
+              onChange={e => setInputs({...inputs, gdp: e.target.value})}
             />
           </InputGroup>
 
@@ -349,26 +303,6 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
               onChange={e => setInputs({...inputs, slg: e.target.value})}
             />
           </InputGroup>
-
-          <InputGroup>
-            <Label>LD% (라인드라이브)</Label>
-            <Input
-              type="number"
-              placeholder="예: 22"
-              value={inputs.ldPct}
-              onChange={e => setInputs({...inputs, ldPct: e.target.value})}
-            />
-          </InputGroup>
-
-          <InputGroup>
-            <Label>SwStr% (헛스윙율)</Label>
-            <Input
-              type="number"
-              placeholder="예: 10"
-              value={inputs.swstrPct}
-              onChange={e => setInputs({...inputs, swstrPct: e.target.value})}
-            />
-          </InputGroup>
         </FormGrid>
         
         <ButtonGroup>
@@ -391,6 +325,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
                   slg: '',
                   ldPct: '',
                   swstrPct: '',
+                  gdp: '',
                 });
               }}
               style={{ background: 'rgba(234, 67, 53, 0.8)' }}
@@ -416,41 +351,6 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
           <SuccessIndicator score={prediction.score}>
             {getSuccessMessage(prediction.score)}
           </SuccessIndicator>
-          
-          <div style={{ 
-            marginTop: '2rem',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '1.5rem',
-            color: 'white'
-          }}>
-            <div>
-              <StatLabel style={{ color: 'rgba(255,255,255,0.8)' }}>
-                예상 KBO wRC+
-              </StatLabel>
-              <StatValue style={{ 
-                WebkitTextFillColor: 'white',
-                color: 'white',
-                fontSize: '2rem',
-                marginTop: '0.5rem'
-              }}>
-                {prediction.predictedWrcPlus}
-              </StatValue>
-            </div>
-            <div>
-              <StatLabel style={{ color: 'rgba(255,255,255,0.8)' }}>
-                성공 확률
-              </StatLabel>
-              <StatValue style={{ 
-                WebkitTextFillColor: 'white',
-                color: 'white',
-                fontSize: '2rem',
-                marginTop: '0.5rem'
-              }}>
-                {prediction.successProbability}%
-              </StatValue>
-            </div>
-          </div>
 
           <ScoreBreakdown>
             <h4 style={{ 
@@ -468,7 +368,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.discipline}/35
+                {prediction.breakdown.discipline}/36
               </span>
             </BreakdownItem>
             <BreakdownItem>
@@ -479,7 +379,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.power}/30
+                {prediction.breakdown.power}/60
               </span>
             </BreakdownItem>
             <BreakdownItem>
@@ -490,7 +390,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.onBase}/20
+                {prediction.breakdown.onBase}/0
               </span>
             </BreakdownItem>
             <BreakdownItem>
@@ -501,40 +401,32 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.babip}/10
+                {prediction.breakdown.babip}/16
               </span>
             </BreakdownItem>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                나이 & 경험 (Age, PA)
+                컨택 & 인플레이 (GDP)
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.experience}/10
+                {prediction.breakdown.experience}/34
               </span>
             </BreakdownItem>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                wRC+ 점수 (낮은 가중치)
+                wRC+ 점수
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.wrc}/15
+                {prediction.breakdown.wrc}/17
               </span>
             </BreakdownItem>
           </ScoreBreakdown>
-          
-          <StatLabel style={{ 
-            color: 'rgba(255,255,255,0.9)',
-            marginTop: '1.5rem',
-            fontSize: '0.9rem'
-          }}>
-            플레이트 디시플린 안정성과 파워 지표 기반, 다양한 타구 품질 지표 포함
-          </StatLabel>
         </ResultCard>
       )}
     </PredictionContainer>

@@ -1,7 +1,7 @@
-// src/components/AAAScoutingBoard.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
-import { Player, KSuccessScore } from '../types';
+import { Player } from '../types';
+import { calculateKFSScore } from '../utils/kfsScore';
 
 const Container = styled.div`
   display: flex;
@@ -108,9 +108,11 @@ const CompactPlayerCard = styled.div<{ selected?: boolean; riskLevel: string }>`
   background: ${props => props.selected ? props.theme.colors.primary + '20' : props.theme.colors.bg.secondary};
   border: 1px solid ${props => props.selected ? props.theme.colors.primary : 'transparent'};
   border-left: 4px solid ${props =>
-    props.riskLevel === 'Low' ? '#34a853' :
-      props.riskLevel === 'Moderate' ? '#fbbc04' :
-        '#ea4335'
+    props.riskLevel === 'S' ? '#00d2d3' : // Cyan for Elite
+    props.riskLevel === 'A' ? '#34a853' : // Green for Low Risk
+    props.riskLevel === 'B' ? '#fbbc04' : // Yellow for Moderate
+    props.riskLevel === 'C' ? '#ff9f43' : // Orange for High
+    '#ea4335' // Red for Very High
   };
   border-radius: ${props => props.theme.borderRadius.md};
   cursor: pointer;
@@ -141,8 +143,8 @@ const ScoreMiniBadge = styled.div<{ score: number }>`
   font-size: 0.85rem;
   font-weight: 700;
   color: ${props =>
-    props.score >= 67 ? props.theme.colors.success :
-      props.score >= 33 ? props.theme.colors.warning :
+    props.score >= 50 ? props.theme.colors.success :
+      props.score >= 35 ? props.theme.colors.warning :
         props.theme.colors.danger
   };
 `;
@@ -176,8 +178,8 @@ const ScoreBadge = styled.div<{ score: number }>`
   padding: 0.5rem 1.5rem;
   border-radius: ${props => props.theme.borderRadius.lg};
   background: ${props =>
-    props.score >= 67 ? props.theme.colors.success :
-      props.score >= 33 ? props.theme.colors.warning :
+    props.score >= 50 ? props.theme.colors.success :
+      props.score >= 35 ? props.theme.colors.warning :
         props.theme.colors.danger
   };
   color: white;
@@ -336,120 +338,91 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const PLAYERS_PER_PAGE = 20; // Increased for compact list
-
-  const calculateKSuccessScore = (player: Player): KSuccessScore => {
-    const wrcPlus = player.wrc_plus || 100;
-    const kPct = player.k_pct || 20;
-    const bbPct = player.bb_pct || 8;
-    const hr = player.hr || 10;
-    const pa = player.pa || 300;
-    const age = player.age || 28;
-    const babip = player.babip || 0.300;
-    const obp = player.obp || 0.320;
-    const slg = player.slg || 0.400;
-    const ldPct = player.ld_pct || 20;
-    const gbPct = player.gb_pct || 45;
-    const iffbPct = player.iffb_pct || 10;
-    const swstrPct = player.swstr_pct || 10;
-
-    const kScore = Math.max(0, (25 - kPct) * 1.2);
-    const bbScore = Math.max(0, (bbPct - 5) * 1.0);
-    const swstrScore = Math.max(0, (15 - swstrPct) * 0.8);
-    const disciplineScore = Math.min(35, kScore + bbScore + swstrScore);
-
-    const powerScore = Math.min(15, (hr / pa) * 1000 * 0.75);
-    const ldScore = Math.max(0, (ldPct - 18) * 0.4);
-    const iffbPenalty = Math.max(0, (iffbPct - 8) * 0.5);
-    const batQualityScore = Math.min(30, powerScore + ldScore - iffbPenalty);
-
-    const obpScore = Math.max(0, (obp - 0.300) * 50);
-    const slgScore = Math.max(0, (slg - 0.350) * 30);
-    const onBaseScore = Math.min(20, obpScore + slgScore);
-
-    const babipScore = babip > 0.380 ?
-      Math.max(0, 10 - (babip - 0.380) * 30) :
-      babip < 0.280 ?
-        Math.max(0, (babip - 0.250) * 30) :
-        10;
-
-    const ageScore = Math.max(0, Math.min(10, (32 - age) * 0.7));
-    const paScore = Math.min(5, (pa - 200) / 80);
-    const experienceScore = ageScore + paScore;
-
-    const wrcScore = Math.max(0, Math.min(15, (wrcPlus - 80) * 0.25));
-
-    const totalScore = Math.max(0, Math.min(100,
-      disciplineScore + batQualityScore + onBaseScore +
-      babipScore + experienceScore + wrcScore
-    ));
-
-    const disciplineFactor = (100 - kPct * 2 + bbPct * 1.5) / 100;
-    const predictedWrcPlus = Math.round(
-      wrcPlus * 0.75 + 100 * 0.25 + disciplineFactor * 5
-    );
-
-    const successProbability = Math.min(95, Math.max(5,
-      totalScore * 0.9 + (kPct < 20 ? 5 : 0) + (bbPct > 10 ? 5 : 0)
-    ));
-
-    const riskLevel: 'Low' | 'Moderate' | 'High' =
-      totalScore >= 67 ? 'Low' :
-        totalScore >= 33 ? 'Moderate' :
-          'High';
-
-    const strengths: string[] = [];
-    if (kPct < 18) strengths.push(`엘리트 컨택 능력(K % ${kPct.toFixed(1)})`);
-    else if (kPct < 22) strengths.push(`우수한 컨택 능력(K % ${kPct.toFixed(1)})`);
-    if (bbPct > 12) strengths.push(`뛰어난 선구안(BB % ${bbPct.toFixed(1)})`);
-    else if (bbPct > 9) strengths.push(`좋은 선구안(BB % ${bbPct.toFixed(1)})`);
-    if ((hr / pa) > 0.06) strengths.push(`강력한 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
-    else if ((hr / pa) > 0.04) strengths.push(`준수한 파워(${hr}HR)`);
-    if (swstrPct < 9) strengths.push(`탁월한 스윙 컨택(SwStr % ${swstrPct.toFixed(1)})`);
-    if (ldPct > 22) strengths.push(`우수한 타구 품질(LD % ${ldPct.toFixed(1)})`);
-    if (age < 25) strengths.push(`매우 젊음(${age}세)`);
-    else if (age < 27) strengths.push(`젊은 나이(${age}세)`);
-    if (wrcPlus > 140) strengths.push(`AAA 엘리트급(wRC + ${wrcPlus})`);
-    else if (wrcPlus > 120) strengths.push(`AAA 우수 성적(wRC + ${wrcPlus})`);
-    if (pa > 450) strengths.push(`충분한 샘플(${pa} PA)`);
-    else if (pa > 350) strengths.push(`적정 샘플(${pa} PA)`);
-    if (obp > 0.380) strengths.push(`높은 출루율(OBP ${obp.toFixed(3)})`);
-    if (babip > 0.300 && babip < 0.370) strengths.push(`안정적인 BABIP(${babip.toFixed(3)})`);
-
-    const concerns: string[] = [];
-    if (kPct > 28) concerns.push(`매우 높은 삼진율(K % ${kPct.toFixed(1)})`);
-    else if (kPct > 24) concerns.push(`높은 삼진율(K % ${kPct.toFixed(1)})`);
-    if (bbPct < 5) concerns.push(`매우 낮은 출루 능력(BB % ${bbPct.toFixed(1)})`);
-    else if (bbPct < 7) concerns.push(`낮은 출루 능력(BB % ${bbPct.toFixed(1)})`);
-    if ((hr / pa) < 0.025) concerns.push(`제한적 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
-    if (swstrPct > 12) concerns.push(`높은 헛스윙율(SwStr % ${swstrPct.toFixed(1)})`);
-    if (iffbPct > 12) concerns.push(`높은 내야플라이 비율(IFFB % ${iffbPct.toFixed(1)})`);
-    if (gbPct > 50) concerns.push(`높은 땅볼 비율(GB % ${gbPct.toFixed(1)})`);
-    if (age > 31) concerns.push(`높은 나이(${age}세)`);
-    else if (age > 29) concerns.push(`나이 고려 필요(${age}세)`);
-    if (pa < 250) concerns.push(`제한적 샘플(${pa} PA)`);
-    if (wrcPlus < 95) concerns.push(`AAA 평균 이하(wRC + ${wrcPlus})`);
-    if (babip > 0.400) concerns.push(`과도하게 높은 BABIP(${babip.toFixed(3)}) - 운 요소 가능`);
-    else if (babip < 0.270) concerns.push(`낮은 BABIP(${babip.toFixed(3)})`);
-    if (obp < 0.310) concerns.push(`낮은 출루율(OBP ${obp.toFixed(3)})`);
-
-    return {
-      score: Math.round(totalScore),
-      predictedWrcPlus,
-      successProbability: Math.round(successProbability),
-      riskLevel,
-      strengths,
-      concerns
-    };
-  };
+  const PLAYERS_PER_PAGE = 20;
 
   const playersWithScores = useMemo(() => {
     return aaaData
       .filter(p => p.pa && p.pa >= 200)
-      .map(player => ({
-        ...player,
-        kScore: calculateKSuccessScore(player)
-      }));
+      .map(player => {
+        const result = calculateKFSScore({
+          wrcPlus: player.wrc_plus || 100,
+          kPct: player.k_pct || 20,
+          bbPct: player.bb_pct || 8,
+          hr: player.hr || 10,
+          pa: player.pa || 300,
+          babip: player.babip || 0.300,
+          obp: player.obp || 0.320,
+          slg: player.slg || 0.400,
+          gdp: player.gdp || 10,
+        });
+
+        let riskLevel: 'S' | 'A' | 'B' | 'C' | 'D' = 'D';
+        if (result.score >= 65) riskLevel = 'S';
+        else if (result.score >= 50) riskLevel = 'A';
+        else if (result.score >= 35) riskLevel = 'B';
+        else if (result.score >= 20) riskLevel = 'C';
+
+        const strengths: string[] = [];
+        const kPct = player.k_pct || 20;
+        const bbPct = player.bb_pct || 8;
+        const hr = player.hr || 10;
+        const pa = player.pa || 300;
+        const age = player.age || 28;
+        const swstrPct = player.swstr_pct || 10;
+        const ldPct = player.ld_pct || 20;
+        const wrcPlus = player.wrc_plus || 100;
+        const obp = player.obp || 0.320;
+        const babip = player.babip || 0.300;
+
+        if (kPct < 18) strengths.push(`엘리트 컨택 능력(K% ${kPct.toFixed(1)})`);
+        else if (kPct < 22) strengths.push(`우수한 컨택 능력(K% ${kPct.toFixed(1)})`);
+        if (bbPct > 12) strengths.push(`뛰어난 선구안(BB% ${bbPct.toFixed(1)})`);
+        else if (bbPct > 9) strengths.push(`좋은 선구안(BB% ${bbPct.toFixed(1)})`);
+        if ((hr / pa) > 0.06) strengths.push(`강력한 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
+        else if ((hr / pa) > 0.04) strengths.push(`준수한 파워(${hr}HR)`);
+        if (swstrPct < 9) strengths.push(`탁월한 스윙 컨택(SwStr% ${swstrPct.toFixed(1)})`);
+        if (ldPct > 22) strengths.push(`우수한 타구 품질(LD% ${ldPct.toFixed(1)})`);
+        if (age < 25) strengths.push(`매우 젊음(${age}세)`);
+        else if (age < 27) strengths.push(`젊은 나이(${age}세)`);
+        if (wrcPlus > 140) strengths.push(`AAA 엘리트급(wRC+ ${wrcPlus})`);
+        else if (wrcPlus > 120) strengths.push(`AAA 우수 성적(wRC+ ${wrcPlus})`);
+        if (pa > 450) strengths.push(`충분한 샘플(${pa} PA)`);
+        else if (pa > 350) strengths.push(`적정 샘플(${pa} PA)`);
+        if (obp > 0.380) strengths.push(`높은 출루율(OBP ${obp.toFixed(3)})`);
+        if (babip > 0.300 && babip < 0.370) strengths.push(`안정적인 BABIP(${babip.toFixed(3)})`);
+
+        const concerns: string[] = [];
+        const gbPct = player.gb_pct || 45;
+        const iffbPct = player.iffb_pct || 10;
+
+        if (kPct > 28) concerns.push(`매우 높은 삼진율(K% ${kPct.toFixed(1)})`);
+        else if (kPct > 24) concerns.push(`높은 삼진율(K% ${kPct.toFixed(1)})`);
+        if (bbPct < 5) concerns.push(`매우 낮은 출루 능력(BB% ${bbPct.toFixed(1)})`);
+        else if (bbPct < 7) concerns.push(`낮은 출루 능력(BB% ${bbPct.toFixed(1)})`);
+        if ((hr / pa) < 0.025) concerns.push(`제한적 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
+        if (swstrPct > 12) concerns.push(`높은 헛스윙율(SwStr% ${swstrPct.toFixed(1)})`);
+        if (iffbPct > 12) concerns.push(`높은 내야플라이 비율(IFFB% ${iffbPct.toFixed(1)})`);
+        if (gbPct > 50) concerns.push(`높은 땅볼 비율(GB% ${gbPct.toFixed(1)})`);
+        if (age > 31) concerns.push(`높은 나이(${age}세)`);
+        else if (age > 29) concerns.push(`나이 고려 필요(${age}세)`);
+        if (pa < 250) concerns.push(`제한적 샘플(${pa} PA)`);
+        if (wrcPlus < 95) concerns.push(`AAA 평균 이하(wRC+ ${wrcPlus})`);
+        if (babip > 0.400) concerns.push(`과도하게 높은 BABIP(${babip.toFixed(3)}) - 운 요소 가능`);
+        else if (babip < 0.270) concerns.push(`낮은 BABIP(${babip.toFixed(3)})`);
+        if (obp < 0.310) concerns.push(`낮은 출루율(OBP ${obp.toFixed(3)})`);
+
+        return {
+          ...player,
+          kScore: {
+            score: result.score,
+            predictedWrcPlus: result.predictedWrcPlus,
+            successProbability: result.successProbability,
+            riskLevel,
+            strengths,
+            concerns
+          }
+        };
+      });
   }, [aaaData]);
 
   const filteredPlayers = useMemo(() => {
@@ -565,18 +538,25 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
                 <PredictionLabel>Predicted wRC+</PredictionLabel>
               </PredictionItem>
               <PredictionItem>
-                <PredictionValue color="#34a853">{selectedPlayer.kScore.successProbability}%</PredictionValue>
-                <PredictionLabel>Success Prob.</PredictionLabel>
+                <PredictionValue color="#34a853">{selectedPlayer.kScore.score}</PredictionValue>
+                <PredictionLabel>KFS Score</PredictionLabel>
               </PredictionItem>
               <PredictionItem>
                 <PredictionValue
                   color={
-                    selectedPlayer.kScore.riskLevel === 'Low' ? '#34a853' :
-                      selectedPlayer.kScore.riskLevel === 'Moderate' ? '#fbbc04' :
-                        '#ea4335'
+                    selectedPlayer.kScore.riskLevel === 'S' ? '#00d2d3' :
+                    selectedPlayer.kScore.riskLevel === 'A' ? '#34a853' :
+                    selectedPlayer.kScore.riskLevel === 'B' ? '#fbbc04' :
+                    selectedPlayer.kScore.riskLevel === 'C' ? '#ff9f43' :
+                    '#ea4335'
                   }
                 >
-                  {selectedPlayer.kScore.riskLevel}
+                  {selectedPlayer.kScore.riskLevel} (
+                  {selectedPlayer.kScore.riskLevel === 'S' ? 'Elite' :
+                   selectedPlayer.kScore.riskLevel === 'A' ? 'Low Risk' :
+                   selectedPlayer.kScore.riskLevel === 'B' ? 'Moderate' :
+                   selectedPlayer.kScore.riskLevel === 'C' ? 'High Risk' : 'Critical'}
+                  )
                 </PredictionValue>
                 <PredictionLabel>Risk Level</PredictionLabel>
               </PredictionItem>

@@ -18,7 +18,9 @@ import AAADashboard from './components/AAADashboard';
 // Pages
 import Dashboard from './pages/Dashboard';
 import PredictionModel from './pages/PredictionModel';
+
 import CorrelationAnalysis from './pages/CorrelationAnalysis';
+import KFSExplanation from './pages/KFSExplanation';
 
 // Data
 import kboFirstYearData from './data/kbo_first_year_stats_matched.json';
@@ -401,7 +403,19 @@ function App() {
           </ContentBox>
         </Section>
 
-        <Section id="aaa-scouting">
+        <Section id="kfs-explanation">
+          <SectionTitle>📝 KFS Score란 무엇인가?</SectionTitle>
+          <SectionText>
+            KBO Foreigner Success Score는 15년간의 외국인 타자 데이터를 분석하여
+            <br />
+            한국 야구에서의 성공 가능성을 예측하는 독자적인 알고리즘입니다.
+          </SectionText>
+          <ContentBox>
+            <KFSExplanation />
+          </ContentBox>
+        </Section>
+
+        <Section dark id="aaa-scouting">
           <SectionTitle>🎯 2025 AAA 스카우팅 보드</SectionTitle>
           <SectionText>
             158명의 2025 AAA 선수들을 KFS Score로 평가합니다.
@@ -417,7 +431,7 @@ function App() {
           </ContentBox>
         </Section>
 
-        <Section dark id="prediction">
+        <Section id="prediction">
           <SectionTitle>🔮 KBO Foreigner Success Score</SectionTitle>
           <SectionText>
             선수의 Pre-KBO 통계를 입력하거나 AAA 선수를 선택하여 KBO 성적을 예측합니다.
@@ -439,6 +453,7 @@ function App() {
           <NavLink active={activeSection === 'players'} onClick={() => scrollToSection('players')}>Top Players</NavLink>
           <NavLink active={activeSection === 'correlation'} onClick={() => scrollToSection('correlation')}>상관 관계</NavLink>
           <NavLink active={activeSection === 'analysis'} onClick={() => scrollToSection('analysis')}>분석</NavLink>
+          <NavLink active={activeSection === 'kfs-explanation'} onClick={() => scrollToSection('kfs-explanation')}>KFS란?</NavLink>
           <NavLink active={activeSection === 'aaa-scouting'} onClick={() => scrollToSection('aaa-scouting')}>AAA 스카우팅</NavLink>
           <NavLink active={activeSection === 'prediction'} onClick={() => scrollToSection('prediction')}>KFS Score</NavLink>
         </NavigationBar>

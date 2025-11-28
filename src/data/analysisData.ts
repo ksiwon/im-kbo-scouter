@@ -43,22 +43,31 @@ export const ANALYSIS_DATA: Record<string, AnalysisContent> = {
     ],
     insight: "적응의 척도: 초기 삼진율 변화폭을 주시해야 합니다."
   },
-  "aaa-scouting": {
-    title: "🎯 2025 AAA 유망주 리포트",
+  "kfs-explanation": {
+    title: "📝 KFS Score의 철학",
     content: [
-      "Danny Jansen(TOR)은 wRC+ 146과 함께 BB% 12.2%, K% 13.6%를 기록했습니다. 거의 1:1에 가까운 볼넷/삼진 비율은 ABS 환경의 KBO에서 강력한 무기가 될 것입니다.",
-      "Michael Reed(ATL)는 wRC+ 183이라는 괴물 같은 스탯과 함께 리스크가 적은 타격 메커니즘을 보유했습니다.",
-      "Eloy Jiménez(CHW)는 13.2%라는 놀라운 삼진율로 KBO 변화구 투수들에게 강점을 보일 것으로 예상됩니다."
+      "KFS Score는 단순히 과거 데이터를 보여주는 것이 아니라, '미래의 성공 확률'을 계산하는 도구입니다.",
+      "wRC+는 놀랍게도 KBO 성적과 상관관계가 거의 없습니다 (r ≈ -0.12).",
+      "100점 만점으로 환산된 이 점수가 여러분의 스카우팅에 확신을 더해줄 것입니다."
     ],
-    insight: "추천 픽: Danny Jansen (TOR) - ABS 맞춤형 '눈이 좋은 타자'"
+    insight: "당연하다고 할 수 있지만, 삼진/병살 없는 파워히터가 베스트!"
+  },
+  "aaa-scouting": {
+    title: "🎯 2025 AAA 유망주 리포트 (KFS 기반)",
+    content: [
+      "KFS 모델(Power > Discipline > GDP)에 따르면, 2025년 AAA 타자 중 '성공 잠재력'이 높은 유형은 명확합니다.",
+      "단순히 wRC+가 높은 타자보다는, '확실한 파워(HR/PA)'와 '인플레이 타구 생산(GDP)' 능력을 겸비한 선수가 유리합니다.",
+      "특히 ABS 환경에서는 '삼진을 당하지 않는 파워 히터'가 최고의 효율을 발휘할 것으로 예측됩니다."
+    ],
+    insight: "추천 전략: wRC+의 함정에 빠지지 말고, '파워'와 '컨택의 질'에 집중하십시오."
   },
   prediction: {
-    title: "🔮 KBO Foreigner Success Score 알고리즘",
+    title: "🔮 KBO Foreigner Success Score 예측",
     content: [
-      "KFS Score는 단순 성적 합산이 아닙니다. 상관관계 가중치를 적용한 예측 점수입니다.",
-      "Plate Discipline(35%), Power & Quality(30%), Base & Contact(20%), Risk Adjust(15%)의 가중치를 적용합니다.",
-      "특히 K%가 20% 미만이고 BB%가 10% 이상인 '완성형 타자'에게 높은 점수를 부여하여 실패 확률을 최소화했습니다."
+      "선수의 Pre-KBO 통계를 입력하거나 AAA 선수를 선택하여 KBO 성적을 예측합니다.",
+      "KFS Score는 Power, Discipline, GDP 등 핵심 지표를 종합하여 산출된 점수입니다.",
+      "이 점수는 선수가 KBO 환경에서 얼마나 성공적으로 적응할 수 있을지를 나타내는 지표입니다."
     ],
-    insight: "이 점수는 '대박'보다는 '실패하지 않을 선수'를 찾는 데 최적화되어 있습니다."
+    insight: "선수 스탯을 입력하여 Risk Level을 확인해보세요."
   }
 };
