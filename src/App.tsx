@@ -358,7 +358,7 @@ function App() {
           <SectionText>
             KBO 입단 전 지표 중 어떤 것이 KBO에서의 성공을 예측할 수 있을까요?
             <br />
-            K%와 BB% 같은 규율 지표는 안정적이지만, wRC+는 환경 의존적입니다.
+            K%와 BB% 같은 선구 지표는 안정적이지만, wRC+는 환경 의존적입니다.
           </SectionText>
           <ContentBox>
             <CorrelationAnalysis
@@ -404,9 +404,9 @@ function App() {
         <Section id="aaa-scouting">
           <SectionTitle>🎯 2025 AAA 스카우팅 보드</SectionTitle>
           <SectionText>
-            158명의 2025 AAA 선수들을 K-Success Score로 평가합니다.
+            158명의 2025 AAA 선수들을 KFS Score로 평가합니다.
             <br />
-            DIKW 분석 기반: K% 안정성(r≈0.50), BB% 안정성(r≈0.29), wRC+ 제한적 전이(r≈-0.12)
+            K% 안정성(r≈0.50), BB% 안정성(r≈0.29), wRC+ 제한적 전이(r≈-0.12)
           </SectionText>
           <ContentBox>
             <AAAScoutingBoard
@@ -418,11 +418,11 @@ function App() {
         </Section>
 
         <Section dark id="prediction">
-          <SectionTitle>🔮 K-Success Score 예측 모델</SectionTitle>
+          <SectionTitle>🔮 KBO Foreigner Success Score</SectionTitle>
           <SectionText>
             선수의 Pre-KBO 통계를 입력하거나 AAA 선수를 선택하여 KBO 성적을 예측합니다.
             <br />
-            플레이트 디시플린 지표가 환경 의존적 지표보다 더 나은 안정성을 보입니다.
+            선구 지표가 환경 의존적 지표(wRC+)보다 더 나은 안정성을 보입니다.
           </SectionText>
           <ContentBox>
             <PredictionModel
@@ -434,13 +434,13 @@ function App() {
         </Section>
 
         <NavigationBar>
-          <NavLink active={activeSection === 'hero'} onClick={() => scrollToSection('hero')}>🏠 홈</NavLink>
-          <NavLink active={activeSection === 'overview'} onClick={() => scrollToSection('overview')}>📊 개요</NavLink>
-          <NavLink active={activeSection === 'players'} onClick={() => scrollToSection('players')}>🏆 Top Players</NavLink>
-          <NavLink active={activeSection === 'correlation'} onClick={() => scrollToSection('correlation')}>🔗 상관 관계</NavLink>
-          <NavLink active={activeSection === 'analysis'} onClick={() => scrollToSection('analysis')}>📈 분석</NavLink>
-          <NavLink active={activeSection === 'aaa-scouting'} onClick={() => scrollToSection('aaa-scouting')}>🎯 AAA 스카우팅</NavLink>
-          <NavLink active={activeSection === 'prediction'} onClick={() => scrollToSection('prediction')}>🔮 예측 모델</NavLink>
+          <NavLink active={activeSection === 'hero'} onClick={() => scrollToSection('hero')}>홈</NavLink>
+          <NavLink active={activeSection === 'overview'} onClick={() => scrollToSection('overview')}>개요</NavLink>
+          <NavLink active={activeSection === 'players'} onClick={() => scrollToSection('players')}>Top Players</NavLink>
+          <NavLink active={activeSection === 'correlation'} onClick={() => scrollToSection('correlation')}>상관 관계</NavLink>
+          <NavLink active={activeSection === 'analysis'} onClick={() => scrollToSection('analysis')}>분석</NavLink>
+          <NavLink active={activeSection === 'aaa-scouting'} onClick={() => scrollToSection('aaa-scouting')}>AAA 스카우팅</NavLink>
+          <NavLink active={activeSection === 'prediction'} onClick={() => scrollToSection('prediction')}>KFS Score</NavLink>
         </NavigationBar>
       </AppContainer>
     </ThemeProvider>

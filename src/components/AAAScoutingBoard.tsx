@@ -500,7 +500,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <SortContainer>
-            <SortButton active={sortBy === 'score'} onClick={() => setSortBy('score')}>K-score</SortButton>
+            <SortButton active={sortBy === 'score'} onClick={() => setSortBy('score')}>KFS</SortButton>
             <SortButton active={sortBy === 'wrc_plus'} onClick={() => setSortBy('wrc_plus')}>wRC+</SortButton>
             <SortButton active={sortBy === 'age'} onClick={() => setSortBy('age')}>Age</SortButton>
           </SortContainer>
@@ -554,7 +554,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
               </div>
               <ScoreBadge score={selectedPlayer.kScore.score}>
                 {selectedPlayer.kScore.score}
-                <span>K-Success Score</span>
+                <span>KFS Score</span>
               </ScoreBadge>
             </DetailHeader>
 

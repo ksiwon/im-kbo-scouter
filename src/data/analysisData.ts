@@ -53,12 +53,12 @@ export const ANALYSIS_DATA: Record<string, AnalysisContent> = {
     insight: "추천 픽: Danny Jansen (TOR) - ABS 맞춤형 '눈이 좋은 타자'"
   },
   prediction: {
-    title: "🔮 K-Success Score 알고리즘",
+    title: "🔮 KBO Foreigner Success Score 알고리즘",
     content: [
-      "K-Success Score는 단순 성적 합산이 아닙니다. 상관관계 가중치를 적용한 예측 모델입니다.",
+      "KFS Score는 단순 성적 합산이 아닙니다. 상관관계 가중치를 적용한 예측 점수입니다.",
       "Plate Discipline(35%), Power & Quality(30%), Base & Contact(20%), Risk Adjust(15%)의 가중치를 적용합니다.",
       "특히 K%가 20% 미만이고 BB%가 10% 이상인 '완성형 타자'에게 높은 점수를 부여하여 실패 확률을 최소화했습니다."
     ],
-    insight: "이 모델은 '대박'보다는 '실패하지 않을 선수'를 찾는 데 최적화되어 있습니다."
+    insight: "이 점수는 '대박'보다는 '실패하지 않을 선수'를 찾는 데 최적화되어 있습니다."
   }
 };

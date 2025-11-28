@@ -10,7 +10,7 @@ export const Card = styled.div`
   border: 1px solid rgba(255,255,255,0.05);
   
   &:hover {
-    transform: translateY(-4px);
+    background: ${props => props.theme.colors.bg.hover};
     box-shadow: ${props => props.theme.shadows.xl};
     border-color: rgba(255,255,255,0.1);
   }

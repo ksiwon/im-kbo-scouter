@@ -232,10 +232,10 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
   return (
     <PredictionContainer>
       <Card>
-        <CardTitle>🔮 K-Success Score 계산기</CardTitle>
+        <CardTitle>🔮 KBO Foreigner Success Score 계산기</CardTitle>
         <StatLabel>
           선수의 Pre-KBO 통계를 입력하여 KBO 성적을 예측합니다.
-          이 모델은 DIKW 분석을 기반으로 K% 안정성(r≈0.50)과 
+          이 점수는 DIKW 분석을 기반으로 K% 안정성(r≈0.50)과 
           제한적인 wRC+ 전이성(r≈-0.12)을 반영합니다.
         </StatLabel>
         
@@ -373,7 +373,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
         
         <ButtonGroup>
           <Button onClick={calculateKSuccessScore}>
-            K-Success Score 계산하기
+            KFS Score 계산하기
           </Button>
           {selectedAAAPlayer && (
             <Button 
@@ -404,7 +404,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
       {prediction !== null && (
         <ResultCard>
           <CardTitle style={{ color: 'white' }}>
-            K-Success Score
+            KFS Score
           </CardTitle>
           <StatValue style={{ 
             WebkitTextFillColor: 'white',

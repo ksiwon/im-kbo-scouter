@@ -41,7 +41,7 @@ KBO Foreign Hitter Predictor는 **DIKW(Data-Information-Knowledge-Wisdom) 모델
 
 - 📊 **데이터 기반 스카우팅**: 65명의 외국인 타자 통계 분석
 - 🔍 **상관관계 분석**: Pre-KBO와 KBO 성적 간의 관계 파악
-- 🎯 **예측 모델**: K-Success Score 계산으로 성공 가능성 예측
+- 🎯 **예측 점수**: KBO Foreigner Success Score 계산으로 성공 가능성 예측
 - 💰 **리스크 감소**: 객관적 지표로 영입 실패 위험 최소화
 
 ---
@@ -66,8 +66,8 @@ KBO Foreign Hitter Predictor는 **DIKW(Data-Information-Knowledge-Wisdom) 모델
 - wRC+ 전이성: r ≈ -0.12 (제한적 전이)
 - ΔStats 분포 분석
 
-### 🔮 Prediction Model
-- **K-Success Score 계산기**
+### 🔮 Prediction Score
+- **KFS Score 계산기**
 - Pre-KBO 통계 입력
 - 실시간 성공 가능성 예측
 - 리스크 레벨 표시

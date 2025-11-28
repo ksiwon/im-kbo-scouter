@@ -163,7 +163,7 @@ const DraggableModal: React.FC<DraggableModalProps> = ({ data }) => {
     <ModalContainer x={position.x} y={position.y} isOpen={isOpen}>
       <Header onMouseDown={handleMouseDown}>
         <Title>
-          <span>Analyst Note</span>
+          <span>Siwon's Note</span>
         </Title>
         <ToggleButton onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}>
           {isOpen ? '−' : '+'}

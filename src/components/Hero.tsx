@@ -87,9 +87,9 @@ function Hero() {
     <HeroSection id="hero">
       <HeroTitle>KBO Foreign Hitter Predictor</HeroTitle>
       <HeroSubtitle>
-        데이터로 발견하는 성공의 패턴
+        Sabermetrics, 데이터로 발견하는 성공의 패턴
         <br />
-        DIKW 모델 기반 예측 시스템
+        KFS Score 기반 예측 시스템
       </HeroSubtitle>
       <HeroMeta>
         📊 65명의 외국인 타자 분석 | 🎯 2010-2024 시즌 | 🌟 2025 AAA 스카우팅
