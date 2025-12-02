@@ -354,6 +354,8 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
           obp: player.obp || 0.320,
           slg: player.slg || 0.400,
           gdp: player.gdp || 10,
+          avg: player.avg || 0.280,
+          woba: player.woba || 0.350,
         });
 
         let riskLevel: 'S' | 'A' | 'B' | 'C' | 'D' = 'D';
@@ -369,7 +371,6 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
         const pa = player.pa || 300;
         const age = player.age || 28;
         const swstrPct = player.swstr_pct || 10;
-        const ldPct = player.ld_pct || 20;
         const wrcPlus = player.wrc_plus || 100;
         const obp = player.obp || 0.320;
         const babip = player.babip || 0.300;
@@ -381,7 +382,6 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
         if ((hr / pa) > 0.06) strengths.push(`강력한 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
         else if ((hr / pa) > 0.04) strengths.push(`준수한 파워(${hr}HR)`);
         if (swstrPct < 9) strengths.push(`탁월한 스윙 컨택(SwStr% ${swstrPct.toFixed(1)})`);
-        if (ldPct > 22) strengths.push(`우수한 타구 품질(LD% ${ldPct.toFixed(1)})`);
         if (age < 25) strengths.push(`매우 젊음(${age}세)`);
         else if (age < 27) strengths.push(`젊은 나이(${age}세)`);
         if (wrcPlus > 140) strengths.push(`AAA 엘리트급(wRC+ ${wrcPlus})`);
@@ -625,6 +625,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
                   ) : (
                     <div style={{ color: '#aaa', fontSize: '0.9rem' }}>No major concerns detected</div>
                   )}
+
                 </InsightBox>
               </div>
             </InsightsContainer>

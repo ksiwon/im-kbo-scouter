@@ -36,7 +36,6 @@ const FormulaBox = styled.div`
   border-radius: ${props => props.theme.borderRadius.xl};
   border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
-  font-family: 'Fira Code', monospace;
   font-size: 1.2rem;
   line-height: 2;
   color: ${props => props.theme.colors.text.primary};
@@ -71,6 +70,7 @@ const WeightBadge = styled.span`
   background: ${props => props.theme.colors.primary}20;
   color: ${props => props.theme.colors.primary};
   border-radius: 20px;
+  border-radius: 20px;
   font-weight: 600;
 `;
 
@@ -78,27 +78,27 @@ function KFSExplanation() {
   return (
     <Container>
       <Section>
-        <SectionTitle>🎯 핵심 철학: "통제 가능한 지표에 집중하라"</SectionTitle>
+        <SectionTitle>🎯 핵심 철학: "데이터가 말하는 성공의 조건"</SectionTitle>
         <Grid>
           <Card>
-            <CardTitle>🚫 wRC+의 함정</CardTitle>
+            <CardTitle>🚫 wRC+의 한계</CardTitle>
             <StatLabel>
               AAA에서의 wRC+는 KBO 성적과 상관관계가 매우 낮습니다 (r = -0.12).
-              리그 환경, 공인구, 스트라이크 존의 차이로 인해 타격 성적은 쉽게 변동됩니다.
+              리그 환경 차이로 인해, 단순히 '미국에서 잘 쳤던 타자'가 한국에서도 잘 치는 것은 아닙니다.
             </StatLabel>
           </Card>
           <Card>
-            <CardTitle>✅ 선구안의 불변성</CardTitle>
+            <CardTitle>✅ 컨택의 질(Quality of Contact)</CardTitle>
             <StatLabel>
-              반면, 타자의 선구안(BB%, K%)은 리그가 바뀌어도 유지되는 경향이 강합니다.
-              KFS Score는 이러한 '변하지 않는 능력'에 더 큰 가중치를 둡니다.
+              데이터 분석 결과, BABIP(인플레이 타구 안타 확률)와 AVG(타율)가 KBO 성공과 가장 높은 상관관계를 보였습니다.
+              이는 '공을 맞추는 능력'과 '좋은 타구를 만드는 능력'이 핵심임을 시사합니다.
             </StatLabel>
           </Card>
           <Card>
-            <CardTitle>⚾ ABS 시대의 도래</CardTitle>
+            <CardTitle>⚾ 파워와 출루의 조화</CardTitle>
             <StatLabel>
-              2024년 ABS(자동 투구 판정 시스템) 도입으로 '존 설정 능력'이 더욱 중요해졌습니다.
-              심판 성향이라는 변수가 사라지면서, 타자의 순수한 규율(Discipline)이 성공의 열쇠가 되었습니다.
+              순수한 파워(HR)와 출루 능력(OBP)은 여전히 중요한 성공 지표입니다.
+              단순한 눈야구(Discipline)보다는, 적극적으로 타격하여 결과를 만들어내는 능력이 더 중요하게 작용합니다.
             </StatLabel>
           </Card>
         </Grid>
@@ -109,12 +109,12 @@ function KFSExplanation() {
         <FormulaBox>
           <div style={{ marginBottom: '1rem', color: '#aaa', fontSize: '1rem' }}>Total Score (Normalized to 100)</div>
           KFS Score = (
-          <span className="highlight">Power</span> × 48% + 
-          <span className="highlight"> Discipline</span> × 37% + 
-          <span className="highlight"> GDP</span> × 34% + 
-          <span className="highlight"> wRC+</span> × 24% + 
-          <span className="highlight"> BABIP</span> × 25%
-          ) / 1.596
+          <span className="highlight">BABIP</span> × 22.4% + 
+          <span className="highlight"> OBP</span> × 21.8% + 
+          <span className="highlight"> HR</span> × 21.6% + 
+          <span className="highlight"> GDP</span> × 19.8% + 
+          <span className="highlight"> AVG</span> × 17.4%
+          ) ...
         </FormulaBox>
       </Section>
 
@@ -123,56 +123,56 @@ function KFSExplanation() {
         <Grid>
           <FactorCard>
             <FactorTitle>
-              Power
-              <WeightBadge>가중치 48%</WeightBadge>
+              BABIP & AVG
+              <WeightBadge>가중치 ~40%</WeightBadge>
             </FactorTitle>
             <StatLabel>
-              홈런 생산 능력과 타구 품질(Line Drive%)을 평가합니다.
-              장타력은 리그 이동 간에도 비교적 잘 유지되는 지표입니다.
+              인플레이 타구를 안타로 만드는 능력입니다.
+              KBO 리그에서는 컨택의 정확도와 타구의 질이 성공의 가장 큰 열쇠입니다.
             </StatLabel>
           </FactorCard>
 
           <FactorCard>
             <FactorTitle>
-              Discipline
-              <WeightBadge>가중치 37%</WeightBadge>
+              OBP (출루율)
+              <WeightBadge>가중치 21.8%</WeightBadge>
             </FactorTitle>
             <StatLabel>
-              삼진율(K%), 볼넷율(BB%), 헛스윙률(SwStr%)을 종합하여 평가합니다.
-              KBO 성공의 가장 강력한 예측 인자입니다.
+              살아서 나가는 능력은 리그를 불문하고 중요합니다.
+              높은 출루율은 안정적인 득점 생산력의 기반이 됩니다.
+            </StatLabel>
+          </FactorCard>
+
+          <FactorCard>
+            <FactorTitle>
+              HR (홈런)
+              <WeightBadge>가중치 21.6%</WeightBadge>
+            </FactorTitle>
+            <StatLabel>
+              순수한 장타력은 KBO에서도 통합니다.
+              홈런 생산 능력은 리그 적응과 무관하게 유지되는 경향이 있습니다.
             </StatLabel>
           </FactorCard>
 
           <FactorCard>
             <FactorTitle>
               GDP (병살타)
-              <WeightBadge>가중치 34%</WeightBadge>
+              <WeightBadge>가중치 19.8%</WeightBadge>
             </FactorTitle>
             <StatLabel>
-              흥미롭게도 병살타는 KBO 성공과 양의 상관관계를 보입니다.
-              이는 '인플레이 타구를 만드는 능력'과 '강한 타구 생산'의 대리 지표로 해석됩니다.
+              놀랍게도 병살타는 양의 상관관계를 보입니다.
+              이는 강한 타구를 자주 만들어내고, 적극적인 타격을 하는 타자들이 성공할 확률이 높음을 의미합니다.
             </StatLabel>
           </FactorCard>
 
           <FactorCard>
             <FactorTitle>
-              BABIP
-              <WeightBadge>가중치 25%</WeightBadge>
+              wOBA & wRC+
+              <WeightBadge>가중치 ~15%</WeightBadge>
             </FactorTitle>
             <StatLabel>
-              인플레이 타구의 안타 확률입니다.
-              지나치게 높거나 낮은 BABIP는 운의 요소가 작용했을 가능성을 시사하므로 보정합니다.
-            </StatLabel>
-          </FactorCard>
-
-          <FactorCard>
-            <FactorTitle>
-              wRC+
-              <WeightBadge>가중치 24%</WeightBadge>
-            </FactorTitle>
-            <StatLabel>
-              조정 득점 생산력입니다.
-              중요한 지표지만, 환경 의존적 지표이기에 상대적으로 가중치가 낮습니다.
+              종합적인 공격 생산력 지표입니다.
+              중요하지만, 환경 의존적인 특성 때문에 개별 스탯보다는 가중치가 낮게 책정되었습니다.
             </StatLabel>
           </FactorCard>
         </Grid>

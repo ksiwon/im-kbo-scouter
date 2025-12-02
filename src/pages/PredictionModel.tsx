@@ -111,9 +111,10 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
     babip: '',
     obp: '',
     slg: '',
-    ldPct: '',
     swstrPct: '',
     gdp: '',
+    avg: '',
+    woba: ''
   });
 
   const [prediction, setPrediction] = useState<{
@@ -123,10 +124,9 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
     breakdown: {
       discipline: number;
       power: number;
-      onBase: number;
-      babip: number;
+      contact: number;
+      value: number;
       experience: number;
-      wrc: number;
     };
   } | null>(null);
   const [selectedAAAPlayer, setSelectedAAAPlayer] = useState<string>('');
@@ -146,9 +146,10 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
           babip: (player.babip || 0).toString(),
           obp: (player.obp || 0).toString(),
           slg: (player.slg || 0).toString(),
-          ldPct: (player.ld_pct || 0).toString(),
           swstrPct: (player.swstr_pct || 0).toString(),
           gdp: (player.gdp || 0).toString(),
+          avg: (player.avg || 0).toString(),
+          woba: (player.woba || 0).toString(),
         });
       }
     }
@@ -156,15 +157,17 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
 
   const calculateKSuccessScore = () => {
     const result = calculateKFSScore({
-      wrcPlus: parseFloat(inputs.wrcPlus),
-      kPct: parseFloat(inputs.kRate),
-      bbPct: parseFloat(inputs.bbRate),
-      hr: parseFloat(inputs.hr),
-      pa: parseFloat(inputs.pa),
-      babip: parseFloat(inputs.babip),
-      obp: parseFloat(inputs.obp),
-      slg: parseFloat(inputs.slg),
-      gdp: parseFloat(inputs.gdp),
+      wrcPlus: parseFloat(inputs.wrcPlus) || 100,
+      kPct: parseFloat(inputs.kRate) || 20,
+      bbPct: parseFloat(inputs.bbRate) || 8,
+      hr: parseFloat(inputs.hr) || 10,
+      pa: parseFloat(inputs.pa) || 300,
+      babip: parseFloat(inputs.babip) || 0.300,
+      obp: parseFloat(inputs.obp) || 0.320,
+      slg: parseFloat(inputs.slg) || 0.400,
+      gdp: parseFloat(inputs.gdp) || 10,
+      avg: parseFloat(inputs.avg) || 0.280,
+      woba: parseFloat(inputs.woba) || 0.350,
     });
 
     setPrediction(result);
@@ -260,7 +263,6 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
             />
           </InputGroup>
           
-
           <InputGroup>
             <Label>GDP (병살타)</Label>
             <Input
@@ -268,6 +270,17 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
               placeholder="예: 12"
               value={inputs.gdp}
               onChange={e => setInputs({...inputs, gdp: e.target.value})}
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <Label>AVG (타율)</Label>
+            <Input
+              type="number"
+              step="0.001"
+              placeholder="예: 0.280"
+              value={inputs.avg}
+              onChange={e => setInputs({...inputs, avg: e.target.value})}
             />
           </InputGroup>
 
@@ -303,6 +316,17 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
               onChange={e => setInputs({...inputs, slg: e.target.value})}
             />
           </InputGroup>
+
+          <InputGroup>
+            <Label>wOBA</Label>
+            <Input
+              type="number"
+              step="0.001"
+              placeholder="예: 0.350"
+              value={inputs.woba}
+              onChange={e => setInputs({...inputs, woba: e.target.value})}
+            />
+          </InputGroup>
         </FormGrid>
         
         <ButtonGroup>
@@ -323,9 +347,10 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
                   babip: '',
                   obp: '',
                   slg: '',
-                  ldPct: '',
                   swstrPct: '',
                   gdp: '',
+                  avg: '',
+                  woba: ''
                 });
               }}
               style={{ background: 'rgba(234, 67, 53, 0.8)' }}
@@ -358,72 +383,61 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
               marginBottom: '1rem',
               fontSize: '1.1rem'
             }}>
-              점수 세부 구성
+              점수 세부 구성 (No Caps)
             </h4>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                플레이트 디시플린 (K%, BB%, SwStr%)
+                Discipline (K%, BB%)
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.discipline}/36
+                {prediction.breakdown.discipline}
               </span>
             </BreakdownItem>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                파워 & 타구 품질 (HR, LD%)
+                Power (HR)
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.power}/60
+                {prediction.breakdown.power}
               </span>
             </BreakdownItem>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                출루 & 장타 (OBP, SLG)
+                Contact & Quality (Avg, BABIP)
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.onBase}/0
+                {prediction.breakdown.contact}
               </span>
             </BreakdownItem>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                BABIP 안정성
+                Value (OBP, SLG, wOBA, wRC+)
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.babip}/16
+                {prediction.breakdown.value}
               </span>
             </BreakdownItem>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                컨택 & 인플레이 (GDP)
+                Experience (GDP)
               </span>
               <span style={{ 
                 color: 'white',
                 fontWeight: 700
               }}>
-                {prediction.breakdown.experience}/34
-              </span>
-            </BreakdownItem>
-            <BreakdownItem>
-              <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-                wRC+ 점수
-              </span>
-              <span style={{ 
-                color: 'white',
-                fontWeight: 700
-              }}>
-                {prediction.breakdown.wrc}/17
+                {prediction.breakdown.experience}
               </span>
             </BreakdownItem>
           </ScoreBreakdown>

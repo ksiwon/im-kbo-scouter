@@ -35,6 +35,7 @@ function calculateCorrelation(x, y) {
 }
 
 // Score calculation function (parameterized)
+// Score calculation function (parameterized)
 function calculateScore(player, weights) {
     const p = player;
     
@@ -47,61 +48,59 @@ function calculateScore(player, weights) {
     const babip = p.babip || 0.300;
     const obp = p.obp || 0.320;
     const slg = p.slg || 0.400;
+    const avg = p.avg || 0.280;
+    const woba = p.woba || 0.350;
+    const gdp = p.gdp || 10;
 
-    // 1. Discipline Score (Only K% and BB%)
-    const kScore = Math.max(0, (25 - kPct) * weights.k_factor);
-    const bbScore = Math.max(0, (bbPct - 5) * weights.bb_factor);
-    const disciplineScore = Math.min(weights.discipline_cap, kScore + bbScore);
-
-    // 2. Power (Only HR/PA)
-    // HR per 600 PA roughly
-    const hrRate = (hr / pa) * 600;
-    const powerScore = Math.min(weights.power_cap, hrRate * weights.hr_factor);
+    // 1. Discipline
+    const kScore = (25 - kPct) * weights.k_factor;
+    const bbScore = (bbPct - 5) * weights.bb_factor;
     
-    // 3. OnBase & Slg
-    const obpScore = Math.max(0, (obp - 0.300) * weights.obp_factor);
-    const slgScore = Math.max(0, (slg - 0.350) * weights.slg_factor);
-    const onBaseScore = Math.min(weights.onbase_cap, obpScore + slgScore);
+    // 2. Power
+    const hrRate = (hr / pa) * 600;
+    const powerScore = hrRate * weights.hr_factor;
+    
+    // 3. Contact & Quality
+    const avgScore = (avg - 0.280) * weights.avg_factor;
+    const babipScore = (babip - 0.300) * weights.babip_factor;
 
-    // 4. BABIP
-    let babipScore = 10;
-    if (babip > 0.380) babipScore = Math.max(0, 10 - (babip - 0.380) * 30);
-    else if (babip < 0.280) babipScore = Math.max(0, (babip - 0.250) * 30);
-    babipScore = babipScore * weights.babip_weight;
-
-
-    // 5. Pre-KBO wRC+
-    const wrcScore = Math.max(0, Math.min(15, (wrcPlus - 80) * weights.wrc_factor));
-
-    // 6. GDP (Unexpected Factor)
-    // GDP correlates positively (0.19). Let's normalize it.
-    // Avg GDP is probably around 10?
-    const gdp = p.gdp || 0;
-    const gdpScore = Math.min(weights.gdp_cap, gdp * weights.gdp_factor);
+    // 4. Value / Production
+    const obpScore = (obp - 0.320) * weights.obp_factor;
+    const slgScore = (slg - 0.400) * weights.slg_factor;
+    const wobaScore = (woba - 0.350) * weights.woba_factor;
+    const wrcScore = (wrcPlus - 100) * weights.wrc_factor;
+    
+    // 5. Negative factors (GDP)
+    const gdpScore = (gdp - 10) * weights.gdp_factor;
 
     // Total
-    const total = disciplineScore + powerScore + onBaseScore + babipScore + wrcScore + gdpScore;
-    return Math.max(0, Math.min(100, total));
+    const total = kScore + bbScore + powerScore + avgScore + babipScore + obpScore + slgScore + wobaScore + wrcScore + gdpScore;
+    
+    return total;
 }
 
-// Initial weights
+// Initial weights based on correlation magnitudes (x100)
+// k_pct: -0.0527 -> 5.27
+// bb_pct: 0.0064 -> 0.64
+// hr: 0.2164 -> 21.64
+// avg: -0.1738 -> 17.38
+// babip: -0.2244 -> 22.44
+// obp: -0.2176 -> 21.76
+// slg: -0.0718 -> 7.18
+// woba: -0.1554 -> 15.54
+// wrc_plus: -0.1168 -> 11.68
+// gdp: 0.1980 -> 19.80
 const initialWeights = {
-    k_factor: 1.2,
-    bb_factor: 1.0,
-    discipline_cap: 35,
-    
-    hr_factor: 0.5,
-    power_cap: 20,
-
-    obp_factor: 50,
-    slg_factor: 30,
-    onbase_cap: 20,
-
-    babip_weight: 1.0,
-    wrc_factor: 0.25,
-    
-    gdp_factor: 0.5,
-    gdp_cap: 10
+    k_factor: 5.27,
+    bb_factor: 0.64,
+    hr_factor: 21.64,
+    avg_factor: 17.38,
+    babip_factor: 22.44,
+    obp_factor: 21.76,
+    slg_factor: 7.18,
+    woba_factor: 15.54,
+    wrc_factor: 11.68,
+    gdp_factor: 19.80
 };
 
 // Optimization loop (Random Search)
@@ -157,6 +156,4 @@ fs.writeFileSync(path.join(__dirname, 'optimization_results.json'), JSON.stringi
 // wRC: ~15 * weight (if wrc_factor changes, max score changes)
 
 console.log("\n--- Suggested Breakdown for Analysis ---");
-console.log(`Discipline Cap: ${bestWeights.discipline_cap.toFixed(1)}`);
-console.log(`Power Cap: ${bestWeights.power_cap.toFixed(1)}`);
-console.log(`OnBase Cap: ${bestWeights.onbase_cap.toFixed(1)}`);
+console.log("Optimization complete. Caps removed.");
