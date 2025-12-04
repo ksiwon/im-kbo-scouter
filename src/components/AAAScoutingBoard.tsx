@@ -264,19 +264,6 @@ const DeepDiveContent = styled.div`
   color: ${props => props.theme.colors.text.secondary};
 `;
 
-const BulletList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0.35rem 0 0 0;
-`;
-
-const BulletItem = styled.li<{ $type: 'risk' | 'strength' }>`
-  font-size: 0.7rem;
-  color: ${props => props.$type === 'risk' ? '#ff6b6b' : '#51cf66'};
-  margin-bottom: 0.2rem;
-  &::before { content: '${props => props.$type === 'risk' ? '⚠️ ' : '✓ '}'; }
-`;
-
 const Verdict = styled.div<{ $score: number }>`
   background: ${props => props.$score >= 70 ? 'rgba(0, 210, 211, 0.1)' : props.$score >= 50 ? 'rgba(52, 168, 83, 0.1)' : 'rgba(251, 188, 4, 0.1)'};
   padding: 0.5rem;
@@ -336,7 +323,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player & { analysis: ReturnType<typeof calculateRisk>; kfsScore: number } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const PLAYERS_PER_PAGE = 10;
+  const PLAYERS_PER_PAGE = 8;
 
   const playersWithAnalysis = useMemo(() => {
     return aaaData
@@ -483,21 +470,13 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
 
             {deepDive && (
               <DeepDiveSection>
-                <DeepDiveTitle>📊 Deep Dive 분석</DeepDiveTitle>
+                <DeepDiveTitle>{deepDive.title}</DeepDiveTitle>
                 <DeepDiveContent>
-                  {deepDive.paragraphs[0]}
-                  {(selectedPlayer.analysis.playerType.riskFactors.length > 0 || selectedPlayer.analysis.playerType.strengths.length > 0) && (
-                    <BulletList>
-                      {selectedPlayer.analysis.playerType.riskFactors.map((factor: string, idx: number) => (
-                        <BulletItem key={`risk-${idx}`} $type="risk">{factor}</BulletItem>
-                      ))}
-                      {selectedPlayer.analysis.playerType.strengths.map((strength: string, idx: number) => (
-                        <BulletItem key={`strength-${idx}`} $type="strength">{strength}</BulletItem>
-                      ))}
-                    </BulletList>
-                  )}
+                  {deepDive.paragraphs.map((p, idx) => (
+                    <p key={idx} dangerouslySetInnerHTML={{ __html: p }} style={{ marginBottom: '0.5rem' }} />
+                  ))}
                 </DeepDiveContent>
-                <Verdict $score={selectedPlayer.kfsScore}>{deepDive.verdict}</Verdict>
+                <Verdict $score={selectedPlayer.kfsScore} dangerouslySetInnerHTML={{ __html: deepDive.verdict }} />
               </DeepDiveSection>
             )}
           </>

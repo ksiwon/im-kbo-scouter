@@ -15,7 +15,7 @@ import FailureArticle from './components/FailureArticle';
 import PlayerList from './components/PlayerList';
 import CorrelationChart from './components/CorrelationChart';
 import ComparisonChart from './components/ComparisonChart';
-import DistributionChart from './components/DistributionChart';
+import DeltaInsights from './components/DeltaInsights';
 import KFSExplanation from './pages/KFSExplanation';
 import AAAScoutingBoard from './components/AAAScoutingBoard';
 import PredictionModel from './pages/PredictionModel';
@@ -150,10 +150,7 @@ function App() {
               />
             </ChartContainer>
             <ChartContainer>
-              <DistributionChart 
-                kboData={kboFirstYearData.players} 
-                preKboData={preKboData.players} 
-              />
+              <DeltaInsights />
             </ChartContainer>
           </VisualWrapper>
         );

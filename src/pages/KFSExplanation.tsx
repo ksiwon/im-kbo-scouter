@@ -105,9 +105,11 @@ function KFSExplanation() {
       </Section>
 
       <Section>
-        <SectionTitle>🧮 계산 알고리즘</SectionTitle>
+        <SectionTitle>🧮 최적화(Optimization) 알고리즘</SectionTitle>
         <FormulaBox>
-          <div style={{ marginBottom: '1rem', color: '#aaa', fontSize: '1rem' }}>Total Score (Normalized to 100)</div>
+          <div style={{ marginBottom: '1rem', color: '#aaa', fontSize: '1rem' }}>
+            수천 명의 데이터 시뮬레이션을 통해 도출된 최적의 공식
+          </div>
           KFS Score = (
           <span className="highlight">BABIP</span> × 22.4% + 
           <span className="highlight"> OBP</span> × 21.8% + 

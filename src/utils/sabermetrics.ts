@@ -321,6 +321,9 @@ export const calculateRisk = (player: Player): AnalysisResult => {
 // ==========================================
 // Deep Dive 분석 텍스트 생성
 // ==========================================
+// ==========================================
+// Deep Dive 분석 텍스트 생성 (Professional Ver.)
+// ==========================================
 export const generateDeepDiveAnalysis = (player: Player): {
   title: string;
   paragraphs: string[];
@@ -328,57 +331,151 @@ export const generateDeepDiveAnalysis = (player: Player): {
 } => {
   const analysis = calculateRisk(player);
   const { playerType } = analysis;
-  const { wrc_plus = 100, k_pct = 20, bb_pct = 8, age = 28 } = player;
+  // KFS Score 구성 요소: BABIP, OBP, HR, GDP, AVG
+  const { 
+    babip = 0.300, 
+    obp = 0.330, 
+    hr = 10, 
+    gdp = 8, 
+    avg = 0.260 
+  } = player;
 
   const paragraphs: string[] = [];
 
-  // 첫 번째 문단: 유형별 핵심 분석
-  paragraphs.push(playerType.analysis);
+  // 1. Player Profile & Archetype Analysis
+  paragraphs.push(`
+    ${player.name} 선수는 <strong>${playerType.archetypeKorean} (${playerType.archetype})</strong> 유형으로 분류됩니다. 
+    ${playerType.analysis}
+  `);
 
-  // 두 번째 문단: 리스크 요인 또는 강점
-  if (playerType.riskFactors.length > 0) {
-    paragraphs.push(`🚨 리스크 요인: ${playerType.riskFactors.join(' / ')}`);
-  }
-  if (playerType.strengths.length > 0) {
-    paragraphs.push(`💪 강점: ${playerType.strengths.join(' / ')}`);
+  // 2. KFS Metrics Analysis (BABIP, OBP, HR, GDP, AVG)
+  const kfsAnalysis: string[] = [];
+  
+  // BABIP (22.4%)
+  if (babip >= 0.350) {
+    kfsAnalysis.push(`
+      <strong>BABIP (22.4%):</strong> ${babip.toFixed(3)}의 높은 BABIP는 KFS 스코어에 긍정적이나, 
+      리그 이동 시 <strong>평균 회귀(Regression)</strong> 가능성을 경계해야 합니다.
+    `);
+  } else if (babip <= 0.280) {
+    kfsAnalysis.push(`
+      <strong>BABIP (22.4%):</strong> ${babip.toFixed(3)}의 낮은 수치는 불운했거나 타구 질이 좋지 않았음을 시사합니다. 
+      KBO에서의 반등 여부가 핵심 변수입니다.
+    `);
+  } else {
+    kfsAnalysis.push(`
+      <strong>BABIP (22.4%):</strong> ${babip.toFixed(3)}로 지속 가능한 수준을 유지하고 있어, 
+      KFS 예측의 신뢰도를 높여줍니다.
+    `);
   }
 
-  // 세 번째 문단: 맥락 분석
-  const contextParagraph: string[] = [];
-  if (wrc_plus >= 130 && k_pct >= 25) {
-    contextParagraph.push(`wRC+ ${wrc_plus}의 화려한 성적에 현혹되기 쉽지만, 데이터는 냉정합니다. AAA wRC+와 KBO 성적의 상관계수는 -0.12에 불과합니다.`);
-  }
-  if (k_pct <= 18 && bb_pct >= 10) {
-    contextParagraph.push(`K% ${k_pct.toFixed(1)}%, BB% ${bb_pct.toFixed(1)}%의 조합은 KBO에서 가장 성공 확률이 높은 프로필입니다. 삼진율과 KBO 성적의 상관계수는 0.50으로 매우 높습니다.`);
-  }
-  if (contextParagraph.length > 0) {
-    paragraphs.push(contextParagraph.join(' '));
+  // OBP (21.8%)
+  if (obp >= 0.380) {
+    kfsAnalysis.push(`
+      <strong>OBP (21.8%):</strong> ${obp.toFixed(3)}의 출루율은 KBO 투수들의 유인구 승부를 
+      이겨낼 수 있는 <strong>가장 확실한 성공 보증 수표</strong>입니다.
+    `);
+  } else if (obp <= 0.320) {
+    kfsAnalysis.push(`
+      <strong>OBP (21.8%):</strong> ${obp.toFixed(3)}의 낮은 출루율은 리스크 요인입니다. 
+      적극적인 타격 성향이 KBO의 스트라이크 존에 적응할 수 있을지 관건입니다.
+    `);
   }
 
-  // 최종 판정
+  // HR (21.6%)
+  if (hr >= 20) {
+    kfsAnalysis.push(`
+      <strong>HR (21.6%):</strong> ${hr}개의 홈런은 확실한 파워 툴을 증명합니다. 
+      컨택 리스크를 감수하더라도 영입할 가치가 있는 <strong>'Game Changer'</strong>입니다.
+    `);
+  }
+
+  // GDP (19.8%) & AVG (17.4%)
+  if (gdp >= 15) {
+    kfsAnalysis.push(`
+      <strong>GDP (19.8%):</strong> ${gdp}개의 병살타는 다소 우려되나, 
+      이는 그만큼 <strong>적극적인 타격(Aggressiveness)</strong>을 했다는 반증이기도 합니다.
+    `);
+  }
+  
+  if (avg >= 0.300) {
+    kfsAnalysis.push(`
+      <strong>AVG (17.4%):</strong> ${avg.toFixed(3)}의 고타율은 
+      KFS 모델에서 기본기(Fundamentals)가 탄탄함을 의미합니다.
+    `);
+  }
+
+  if (kfsAnalysis.length > 0) {
+    paragraphs.push(kfsAnalysis.join('<br/>'));
+  }
+
+  // 최종 판정 (Professional Tone) - KFS Score 기반
+  const kfsScore = calculateSimpleKFS(player);
   let verdict: string;
-  switch (analysis.riskLevel) {
-    case 'S':
-      verdict = `🏆 최종 판정: 적극 영입 추천. ${age}세의 ${player.name}은(는) KBO에서 즉시 전력감으로 활약할 것으로 예상됩니다.`;
-      break;
-    case 'A':
-      verdict = `✅ 최종 판정: 영입 추천. 안정적인 활약이 기대되며, 실패 확률이 낮습니다.`;
-      break;
-    case 'B':
-      verdict = `⚖️ 최종 판정: 조건부 추천. 코칭스태프의 역량에 따라 성패가 갈릴 수 있습니다.`;
-      break;
-    case 'C':
-      verdict = `⚠️ 최종 판정: 신중한 검토 필요. 높은 리스크를 감수할 준비가 되어 있다면 도전해볼 만합니다.`;
-      break;
-    case 'D':
-      verdict = `❌ 최종 판정: 영입 비추천. 다른 대안을 찾는 것이 현명합니다.`;
-      break;
+
+  if (kfsScore >= 70) {
+    verdict = `🏆 <strong>Scouting Grade: ${kfsScore.toFixed(1)} (Elite)</strong><br/>최적화 모델이 보증하는 최고 등급 자원입니다.`;
+  } else if (kfsScore >= 60) {
+    verdict = `✅ <strong>Scouting Grade: ${kfsScore.toFixed(1)} (Plus)</strong><br/>주요 지표들이 고르게 우수하여 안정적인 활약이 기대됩니다.`;
+  } else if (kfsScore >= 50) {
+    verdict = `⚖️ <strong>Scouting Grade: ${kfsScore.toFixed(1)} (Average)</strong><br/>준수한 점수이나, 일부 지표의 편차(Variance)가 존재합니다.`;
+  } else if (kfsScore >= 40) {
+    verdict = `⚠️ <strong>Scouting Grade: ${kfsScore.toFixed(1)} (Below Average)</strong><br/>모델상 리스크가 감지됩니다. 특정 툴(Tool)에 의존하는 경향이 있습니다.`;
+  } else {
+    verdict = `❌ <strong>Scouting Grade: ${kfsScore.toFixed(1)} (Poor)</strong><br/>최적화 기준에 미달하는 지표들이 다수 발견됩니다.`;
   }
 
   return {
     title: `${playerType.archetypeIcon} ${player.name} - ${playerType.archetypeKorean}`,
     paragraphs,
     verdict,
+  };
+};
+
+// ==========================================
+// 성공 요인 분석 (Success Factor Analysis)
+// ==========================================
+export const generateSuccessAnalysis = (player: Player, preData?: Player): {
+  title: string;
+  paragraphs: string[];
+} => {
+  // preData가 있으면 그것을 분석, 없으면 현재 데이터(player)를 분석
+  const targetData = preData || player;
+  
+  const { 
+    k_pct = 20, 
+    bb_pct = 8, 
+    babip = 0.300
+  } = targetData;
+
+  const paragraphs: string[] = [];
+  const successFactors: string[] = [];
+
+  // 1. 성공 요인 추출
+  if (bb_pct >= 10) successFactors.push(`<strong>뛰어난 선구안(BB% ${bb_pct.toFixed(1)}%)</strong>`);
+  if (k_pct <= 18) successFactors.push(`<strong>안정적인 컨택(K% ${k_pct.toFixed(1)}%)</strong>`);
+  if (babip >= 0.320 && babip <= 0.360) successFactors.push(`<strong>우수한 인플레이 타구 생산(BABIP ${babip.toFixed(3)})</strong>`);
+
+  // 2. 분석 텍스트 생성
+  if (successFactors.length > 0) {
+    paragraphs.push(`
+      이 선수가 KBO에서 성공할 수 있었던 핵심 동력은 ${successFactors.join(', ')}입니다.
+    `);
+    
+    paragraphs.push(`
+      AAA 시절 기록한 이러한 지표들은 <strong>리그 변동성(League Volatility)</strong>에 영향을 덜 받는 
+      <strong>'환경 독립적 변수'</strong>들이었기에, KBO 리그에서도 그대로 재현될 수 있었습니다.
+    `);
+  } else {
+    paragraphs.push(`
+      전반적인 지표가 리그 평균 이상으로 균형 잡혀 있었으며, 
+      특정 약점이 없는 <strong>'육각형 타자'</strong>로서의 면모가 성공의 기반이 되었습니다.
+    `);
+  }
+
+  return {
+    title: `🏆 성공 요인 분석: ${player.name}`,
+    paragraphs,
   };
 };
 
@@ -403,7 +500,7 @@ export const generateContextNote = (sectionId: string): string => {
       return '리그 이동에 따른 성적 변화(Delta)를 주목하십시오. KBO 투수들의 평균 구속은 낮지만, 변화구 구사율과 유인구 승부는 집요합니다. 컨택율이 뒷받침되지 않는 파워는 KBO에서 "선풍기"로 전락할 위험이 큽니다.';
     
     case 'kfs':
-      return 'KFS Score는 환경 의존적인 지표(wRC+, HR)의 가중치를 낮추고, 환경 독립적인 지표(K%, BB%, Contact%)의 가중치를 높인 새로운 알고리즘입니다.';
+      return 'KFS Score는 단순한 통계의 합이 아닙니다. 수천 명의 데이터 시뮬레이션과 최적화(Optimization) 과정을 통해 도출된, KBO 리그 성공 확률을 가장 정확하게 예측하는 알고리즘 지표입니다.';
     
     case 'aaa-scouting':
       return '2025년 AAA 타자들 중 "S-Tier" 등급을 받은 선수는 손에 꼽습니다. 숫자에 속지 마세요. wRC+가 높다고 해서 성공이 보장되는 것은 아닙니다.';

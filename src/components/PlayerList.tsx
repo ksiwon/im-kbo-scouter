@@ -1,8 +1,9 @@
+
 // src/components/PlayerList.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Player } from '../types';
-import { calculateRisk, generateDeepDiveAnalysis } from '../utils/sabermetrics';
+import { generateSuccessAnalysis } from '../utils/sabermetrics';
 
 const Container = styled.div`
   display: flex;
@@ -217,40 +218,7 @@ const DeepDiveContent = styled.div`
   color: ${props => props.theme.colors.text.secondary};
 `;
 
-const RiskBadge = styled.span<{ $level: string }>`
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: bold;
-  background: ${props => 
-    props.$level === 'S' ? '#00d2d3' : 
-    props.$level === 'A' ? '#34a853' : 
-    props.$level === 'B' ? '#fbbc04' : 
-    props.$level === 'C' ? '#ff9f43' :
-    '#ea4335'};
-  color: ${props => 
-    props.$level === 'B' || props.$level === 'C' ? '#1e272e' : 'white'};
-`;
 
-const BulletList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0 0;
-  font-size: 0.75rem;
-`;
-
-const BulletItem = styled.li<{ $type: 'risk' | 'strength' }>`
-  color: ${props => props.$type === 'risk' ? '#ff6b6b' : '#51cf66'};
-  margin-bottom: 0.25rem;
-  padding-left: 1rem;
-  position: relative;
-  
-  &::before {
-    content: '${props => props.$type === 'risk' ? '⚠️' : '✓'}';
-    position: absolute;
-    left: 0;
-  }
-`;
 
 interface PlayerListProps {
   kboData: Player[];
@@ -278,10 +246,9 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
 
   if (!currentPlayer) return null;
 
-  // Deep Dive analysis for the selected player (using preData if available)
-  const playerForAnalysis = preData || currentPlayer;
-  const analysis = calculateRisk(playerForAnalysis);
-  const deepDive = generateDeepDiveAnalysis(playerForAnalysis);
+  // Success Analysis for the selected player
+  // analysis is not used here anymore as we use generateSuccessAnalysis directly
+  const successAnalysis = generateSuccessAnalysis(currentPlayer, preData);
 
   return (
     <Container>
@@ -327,6 +294,9 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
                 <StatRow><StatName>OPS</StatName><StatVal>{((preData.obp || 0) + (preData.slg || 0)).toFixed(3)}</StatVal></StatRow>
                 <StatRow><StatName>BB%</StatName><StatVal>{preData.bb_pct?.toFixed(1)}%</StatVal></StatRow>
                 <StatRow><StatName>K%</StatName><StatVal>{preData.k_pct?.toFixed(1)}%</StatVal></StatRow>
+                <StatRow><StatName>HR</StatName><StatVal>{preData.hr}</StatVal></StatRow>
+                <StatRow><StatName>ISO</StatName><StatVal>{preData.iso?.toFixed(3)}</StatVal></StatRow>
+                <StatRow><StatName>BABIP</StatName><StatVal>{preData.babip?.toFixed(3)}</StatVal></StatRow>
               </>
             ) : (
               <div style={{ textAlign: 'center', color: '#666', fontSize: '0.8rem' }}>데이터 없음</div>
@@ -346,29 +316,21 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
             <StatRow><StatName>OPS</StatName><StatVal highlight>{((currentPlayer.obp || 0) + (currentPlayer.slg || 0)).toFixed(3)}</StatVal></StatRow>
             <StatRow><StatName>BB%</StatName><StatVal>{currentPlayer.bb_pct?.toFixed(1)}%</StatVal></StatRow>
             <StatRow><StatName>K%</StatName><StatVal>{currentPlayer.k_pct?.toFixed(1)}%</StatVal></StatRow>
+            <StatRow><StatName>HR</StatName><StatVal>{currentPlayer.hr}</StatVal></StatRow>
+            <StatRow><StatName>BABIP</StatName><StatVal>{currentPlayer.babip?.toFixed(3)}</StatVal></StatRow>
           </ComparisonSide>
         </ComparisonContainer>
 
-        {/* Inline Deep Dive Analysis */}
-        <DeepDiveSection>
-          <DeepDiveTitle>
-            📊 Deep Dive 분석
-            <RiskBadge $level={analysis.riskLevel}>{analysis.riskLevel}-Tier</RiskBadge>
-          </DeepDiveTitle>
-          <DeepDiveContent>
-            {deepDive.paragraphs[0]}
-            {(analysis.playerType.riskFactors.length > 0 || analysis.playerType.strengths.length > 0) && (
-              <BulletList>
-                {analysis.playerType.riskFactors.slice(0, 2).map((factor, idx) => (
-                  <BulletItem key={`risk-${idx}`} $type="risk">{factor}</BulletItem>
-                ))}
-                {analysis.playerType.strengths.slice(0, 2).map((strength, idx) => (
-                  <BulletItem key={`strength-${idx}`} $type="strength">{strength}</BulletItem>
-                ))}
-              </BulletList>
-            )}
-          </DeepDiveContent>
-        </DeepDiveSection>
+        {successAnalysis && (
+          <DeepDiveSection>
+            <DeepDiveTitle>{successAnalysis.title}</DeepDiveTitle>
+            <DeepDiveContent>
+              {successAnalysis.paragraphs.map((p, idx) => (
+                <p key={idx} dangerouslySetInnerHTML={{ __html: p }} style={{ marginBottom: '0.5rem' }} />
+              ))}
+            </DeepDiveContent>
+          </DeepDiveSection>
+        )}
       </RightPanel>
     </Container>
   );
