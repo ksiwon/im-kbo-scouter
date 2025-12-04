@@ -1,6 +1,6 @@
 // src/App.tsx
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { ThemeProvider } from 'styled-components';
 import { GlobalStyle, theme } from './styles/GlobalStyle';
 
@@ -45,6 +45,27 @@ const Text = styled.p`
 const Emphasis = styled.span`
   color: ${props => props.theme.colors.primary};
   font-weight: 600;
+`;
+
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`;
+
+const ScrollIndicator = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.colors.text.disabled};
+  font-size: 0.75rem;
+  animation: ${pulse} 2s ease-in-out infinite;
+  margin-top: 3rem;
+  opacity: 0.7;
+`;
+
+const ScrollArrow = styled.span`
+  font-size: 1.5rem;
 `;
 
 // Visual Container - 패딩 제거
@@ -228,6 +249,11 @@ function App() {
           <ContextNote title="KEY QUESTION" icon="🔍">
             {generateContextNote('intro')}
           </ContextNote>
+          
+          <ScrollIndicator>
+            <span>스크롤하여 분석 시작</span>
+            <ScrollArrow>↓</ScrollArrow>
+          </ScrollIndicator>
         </Step>
 
         {/* 2. Failure Article Section */}

@@ -13,11 +13,6 @@ const fadeInUp = keyframes`
   }
 `;
 
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-`;
-
 const HeroContainer = styled.section`
   width: 100%;
   height: 100%;
@@ -119,24 +114,6 @@ const StatLabel = styled.div`
   margin-top: 0.25rem;
 `;
 
-const ScrollIndicator = styled.div`
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.colors.text.disabled};
-  font-size: 0.75rem;
-  animation: ${pulse} 2s ease-in-out infinite;
-`;
-
-const ScrollArrow = styled.span`
-  font-size: 1.5rem;
-`;
-
 const Footer = styled.div`
   position: absolute;
   bottom: 1rem;
@@ -179,11 +156,6 @@ function Hero() {
           <StatLabel>2025 AAA 스카우팅</StatLabel>
         </StatItem>
       </StatsRow>
-      
-      <ScrollIndicator>
-        <span>스크롤하여 분석 시작</span>
-        <ScrollArrow>↓</ScrollArrow>
-      </ScrollIndicator>
       
       <Footer>
         KBO Foreign Hitter Predictor © 2025 | Data: FanGraphs.com
