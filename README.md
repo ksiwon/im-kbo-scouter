@@ -35,7 +35,7 @@ KBO 리그 외국인 타자의 성공 가능성을 예측하는 인터랙티브 
 
 ## 🎯 Overview
 
-KBO Foreign Hitter Predictor는 **DIKW(Data-Information-Knowledge-Wisdom) 모델**을 기반으로 외국인 선수의 KBO 적응 가능성을 예측하는 웹 애플리케이션입니다.
+KBO Foreign Hitter Predictor는 **DIKW 모델**을 기반으로 외국인 선수의 KBO 적응 가능성을 예측하는 웹 애플리케이션입니다.
 
 ### 프로젝트 목표
 
