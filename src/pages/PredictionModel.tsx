@@ -17,11 +17,11 @@ import { calculateKFSScore } from '../utils/kfsScore';
 const PredictionContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${props => props.theme.spacing.xl};
+  gap: 1rem;
 `;
 
 const ResultCard = styled(Card)`
-  margin-top: ${props => props.theme.spacing.xl};
+  margin-top: 1rem;
   background: ${props => props.theme.colors.bg.secondary};
   text-align: center;
 `;
@@ -29,8 +29,8 @@ const ResultCard = styled(Card)`
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: ${props => props.theme.spacing.lg};
-  margin-top: ${props => props.theme.spacing.lg};
+  gap: 0.5rem;
+  margin-top: 1rem;
 `;
 
 const SuccessIndicator = styled.div<{ score: number }>`
@@ -75,8 +75,8 @@ const ButtonGroup = styled.div`
 `;
 
 const ScoreBreakdown = styled.div`
-  margin-top: 2rem;
-  padding: 1.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: ${props => props.theme.borderRadius.lg};
   text-align: left;

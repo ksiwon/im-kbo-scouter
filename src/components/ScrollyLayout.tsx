@@ -1,31 +1,57 @@
 // src/components/ScrollyLayout.tsx
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
   display: flex;
   width: 100%;
   min-height: 100vh;
+  height: 100vh;
   position: relative;
+  overflow: hidden;
 `;
 
 const LeftPanel = styled.div`
   width: 30%;
-  min-width: 320px; /* Slightly reduced min-width */
+  min-width: 300px;
+  max-width: 400px;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 10;
   position: relative;
-  pointer-events: auto; 
-  padding-bottom: 50vh;
+  pointer-events: auto;
+  padding-bottom: 30vh;
+  scroll-behavior: smooth;
+  background: ${props => props.theme.colors.bg.secondary};
+  
+  /* 커스텀 스크롤바 */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
   
   @media (max-width: 1024px) {
     width: 100%;
     min-width: auto;
-    background: rgba(10, 14, 39, 0.95);
+    max-width: none;
   }
 `;
 
 const RightPanel = styled.div`
-  width: 70%;
+  flex: 1;
   height: 100vh;
   position: sticky;
   top: 0;
@@ -40,39 +66,61 @@ const RightPanel = styled.div`
     position: fixed;
     width: 100%;
     z-index: 0;
-    opacity: 0.2;
+    opacity: 0.15;
+    pointer-events: none;
   }
 `;
 
-const StepContainer = styled.div`
-  min-height: 80vh;
+const VisualContainer = styled.div`
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 1rem; /* Reduced padding */
+  /* 패딩 제거 */
+`;
+
+const StepContainer = styled.div`
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem 1rem;
   
   & > div {
-    background: rgba(20, 20, 30, 0.9);
-    backdrop-filter: blur(10px);
-    padding: 1.5rem; /* Reduced padding */
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0.75rem;
     width: 100%;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-width: none;
     
-    /* Font size adjustments */
     h2 {
-      font-size: 1.8rem; /* Reduced from 2.5rem */
-      margin-bottom: 1rem;
+      font-size: 1.3rem;
+      line-height: 1.3;
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      color: ${props => props.theme.colors.text.primary};
     }
     
     p {
-      font-size: 1rem; /* Reduced from 1.1rem */
+      font-size: 0.85rem;
       line-height: 1.6;
-      margin-bottom: 1rem;
+      margin-bottom: 0.6rem;
+      color: ${props => props.theme.colors.text.secondary};
     }
   }
+  
+  @media (max-width: 1024px) {
+    padding: 1rem 0.75rem;
+    min-height: 50vh;
+  }
+`;
+
+const SectionIndicator = styled.div`
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: ${props => props.theme.colors.primary};
+  opacity: 0.8;
+  margin-bottom: 1rem;
 `;
 
 interface ScrollyLayoutProps {
@@ -81,48 +129,104 @@ interface ScrollyLayoutProps {
   onStepChange: (stepIndex: number) => void;
 }
 
-export const Step = ({ children, id }: { children: ReactNode, id: string }) => {
+export const Step = ({ 
+  children, 
+  id, 
+  sectionLabel 
+}: { 
+  children: ReactNode; 
+  id: string;
+  sectionLabel?: string;
+}) => {
   return (
-    <StepContainer id={id} className="scrolly-step">
-      <div>{children}</div>
+    <StepContainer id={id} className="scrolly-step" data-section={id}>
+      <div>
+        {sectionLabel && <SectionIndicator>{sectionLabel}</SectionIndicator>}
+        {children}
+      </div>
     </StepContainer>
   );
 };
 
-export const ScrollyLayout = ({ children, visual, onStepChange }: ScrollyLayoutProps) => {
+export const ScrollyLayout = ({ 
+  children, 
+  visual, 
+  onStepChange 
+}: ScrollyLayoutProps) => {
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const currentStepRef = useRef<number>(0);
+
+  const handleStepChange = useCallback((index: number) => {
+    if (currentStepRef.current !== index) {
+      currentStepRef.current = index;
+      onStepChange(index);
+    }
+  }, [onStepChange]);
+
   useEffect(() => {
+    const leftPanel = leftPanelRef.current;
+    if (!leftPanel) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Array.from(document.querySelectorAll('.scrolly-step')).indexOf(entry.target);
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            const steps = Array.from(leftPanel.querySelectorAll('.scrolly-step'));
+            const index = steps.indexOf(entry.target as Element);
             if (index !== -1) {
-              onStepChange(index);
+              handleStepChange(index);
             }
           }
         });
       },
       {
-        threshold: 0.5,
-        rootMargin: '-10% 0px -10% 0px'
+        root: leftPanel,
+        threshold: [0.5],
+        rootMargin: '-20% 0px -30% 0px'
       }
     );
 
-    const steps = document.querySelectorAll('.scrolly-step');
+    const steps = leftPanel.querySelectorAll('.scrolly-step');
     steps.forEach((step) => observer.observe(step));
 
     return () => {
       steps.forEach((step) => observer.unobserve(step));
     };
-  }, [onStepChange]);
+  }, [handleStepChange]);
+
+  // 키보드 네비게이션
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const leftPanel = leftPanelRef.current;
+      if (!leftPanel) return;
+
+      const steps = leftPanel.querySelectorAll('.scrolly-step');
+      const currentIndex = currentStepRef.current;
+
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        e.preventDefault();
+        const nextIndex = Math.min(currentIndex + 1, steps.length - 1);
+        steps[nextIndex]?.scrollIntoView({ behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        e.preventDefault();
+        const prevIndex = Math.max(currentIndex - 1, 0);
+        steps[prevIndex]?.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <Container>
-      <LeftPanel>
+      <LeftPanel ref={leftPanelRef} id="narrative-panel">
         {children}
       </LeftPanel>
-      <RightPanel id="sticky-visual">
-        {visual}
+      <RightPanel id="visual-panel">
+        <VisualContainer>
+          {visual}
+        </VisualContainer>
       </RightPanel>
     </Container>
   );

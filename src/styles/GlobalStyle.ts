@@ -11,7 +11,7 @@ export const theme = {
     warning: '#fbbc04',
     info: '#4285f4',
     
-    // Background
+    // Background (Flat Design)
     bg: {
       primary: '#0a0e27',
       secondary: '#131b3a',
@@ -39,7 +39,7 @@ export const theme = {
       pink: '#f538a0',
     },
     
-    // Gradients (단색으로 변경)
+    // Flat colors (그라데이션 제거)
     gradient: {
       primary: '#1a73e8',
       success: '#34a853',
@@ -87,8 +87,12 @@ export const GlobalStyle = createGlobalStyle`
   }
   
   html {
-    /* 부드러운 스크롤을 위해 추가 (가로 스크롤 섹션에 도움) */
     scroll-behavior: smooth;
+    font-size: 16px;
+    
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
   }
 
   body {
@@ -99,14 +103,54 @@ export const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     background: ${theme.colors.bg.primary};
     color: ${theme.colors.text.primary};
-    overflow-x: hidden; /* body 자체의 스크롤은 숨김 */
+    overflow-x: hidden;
     overflow-y: hidden;
+    min-height: 100vh;
+  }
+  
+  #root {
+    min-height: 100vh;
   }
   
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
   
+  /* 글로벌 링크 스타일 */
+  a {
+    color: ${theme.colors.primary};
+    text-decoration: none;
+    transition: color ${theme.transitions.fast};
+    
+    &:hover {
+      color: ${theme.colors.info};
+    }
+  }
+  
+  /* 버튼 리셋 */
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    
+    &:focus-visible {
+      outline: 2px solid ${theme.colors.primary};
+      outline-offset: 2px;
+    }
+  }
+  
+  /* 인풋 리셋 */
+  input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    
+    &:focus {
+      outline: none;
+    }
+  }
+  
+  /* 커스텀 스크롤바 */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -119,9 +163,25 @@ export const GlobalStyle = createGlobalStyle`
   ::-webkit-scrollbar-thumb {
     background: ${theme.colors.bg.hover};
     border-radius: 4px;
+    
+    &:hover {
+      background: ${theme.colors.text.disabled};
+    }
   }
   
-  ::-webkit-scrollbar-thumb:hover {
-    background: ${theme.colors.text.disabled};
+  /* 선택 영역 스타일 */
+  ::selection {
+    background: ${theme.colors.primary}40;
+    color: ${theme.colors.text.primary};
+  }
+  
+  /* 포커스 링 */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  
+  :focus-visible {
+    outline: 2px solid ${theme.colors.primary};
+    outline-offset: 2px;
   }
 `;

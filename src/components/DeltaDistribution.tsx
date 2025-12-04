@@ -6,21 +6,21 @@ import { Player } from '../types';
 
 const ChartContainer = styled.div`
   background: ${props => props.theme.colors.bg.tertiary};
-  padding: 2rem;
+  padding: 1rem;
   border-radius: ${props => props.theme.borderRadius.xl};
   box-shadow: ${props => props.theme.shadows.lg};
 `;
 
 const ChartTitle = styled.h3`
   font-size: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: ${props => props.theme.colors.text.primary};
 `;
 
 const MetricSelector = styled.div`
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 `;
 
@@ -44,8 +44,8 @@ const MetricButton = styled.button<{ active?: boolean }>`
 `;
 
 const StatsBox = styled.div`
-  margin-top: 2rem;
-  padding: 1.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
   background: ${props => props.theme.colors.bg.secondary};
   border-radius: ${props => props.theme.borderRadius.lg};
   display: grid;
