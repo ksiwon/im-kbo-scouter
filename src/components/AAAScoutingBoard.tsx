@@ -336,7 +336,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player & { analysis: ReturnType<typeof calculateRisk>; kfsScore: number } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const PLAYERS_PER_PAGE = 15;
+  const PLAYERS_PER_PAGE = 10;
 
   const playersWithAnalysis = useMemo(() => {
     return aaaData

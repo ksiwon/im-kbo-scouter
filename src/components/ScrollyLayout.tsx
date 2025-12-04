@@ -56,11 +56,23 @@ const RightPanel = styled.div`
   position: sticky;
   top: 0;
   right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: ${props => props.theme.colors.bg.primary};
-  overflow: hidden;
+  overflow-y: auto; /* Enable vertical scrolling */
+  
+  /* Custom Scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
   
   @media (max-width: 1024px) {
     position: fixed;
@@ -73,11 +85,12 @@ const RightPanel = styled.div`
 
 const VisualContainer = styled.div`
   width: 100%;
-  height: 100%;
+  min-height: 100%; /* Allow growth */
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* 패딩 제거 */
+  padding: 3rem 2rem; /* Increased padding */
 `;
 
 const StepContainer = styled.div`
@@ -160,6 +173,12 @@ export const ScrollyLayout = ({
     if (currentStepRef.current !== index) {
       currentStepRef.current = index;
       onStepChange(index);
+      
+      // Auto-scroll RightPanel to top
+      const rightPanel = document.getElementById('visual-panel');
+      if (rightPanel) {
+        rightPanel.scrollTop = 0;
+      }
     }
   }, [onStepChange]);
 

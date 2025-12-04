@@ -16,7 +16,6 @@ import PlayerList from './components/PlayerList';
 import CorrelationChart from './components/CorrelationChart';
 import ComparisonChart from './components/ComparisonChart';
 import DistributionChart from './components/DistributionChart';
-import DeltaDistribution from './components/DeltaDistribution';
 import KFSExplanation from './pages/KFSExplanation';
 import AAAScoutingBoard from './components/AAAScoutingBoard';
 import PredictionModel from './pages/PredictionModel';
@@ -58,7 +57,7 @@ const VisualWrapper = styled.div<{ $fullHeight?: boolean }>`
   justify-content: center;
   gap: 0.5rem;
   padding: 0;
-  overflow: auto;
+  overflow: visible; /* Fixed double scroll */
 `;
 
 // 차트 컨테이너 - 전체 너비 사용
@@ -67,20 +66,6 @@ const ChartContainer = styled.div`
   max-width: 100%;
   padding: 0.5rem;
   box-sizing: border-box;
-`;
-
-// 그리드 컨테이너 - 전체 너비
-const GridContainer = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  padding: 0 0.5rem;
-  box-sizing: border-box;
-  
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 // 전체 컨테이너 - AAA Scouting 등
@@ -164,16 +149,12 @@ function App() {
                 preKboData={preKboData.players} 
               />
             </ChartContainer>
-            <GridContainer>
+            <ChartContainer>
               <DistributionChart 
                 kboData={kboFirstYearData.players} 
                 preKboData={preKboData.players} 
               />
-              <DeltaDistribution 
-                kboData={kboFirstYearData.players} 
-                preKboData={preKboData.players} 
-              />
-            </GridContainer>
+            </ChartContainer>
           </VisualWrapper>
         );
         
