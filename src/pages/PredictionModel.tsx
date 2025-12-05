@@ -1,6 +1,6 @@
 // src/pages/PredictionModel.tsx
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { 
   Card, 
   CardTitle, 
@@ -14,10 +14,16 @@ import {
 import { Player } from '../types';
 import { calculateKFSScore } from '../utils/kfsScore';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const PredictionContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  animation: ${fadeIn} 0.6s ease-out;
 `;
 
 const ResultCard = styled(Card)`

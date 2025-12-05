@@ -1,6 +1,11 @@
 // src/components/DeltaInsights.tsx
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const InsightContainer = styled.div`
   background: ${props => props.theme.colors.bg.tertiary};
@@ -8,6 +13,7 @@ const InsightContainer = styled.div`
   border-radius: ${props => props.theme.borderRadius.xl};
   box-shadow: ${props => props.theme.shadows.lg};
   margin-top: 1rem;
+  animation: ${fadeIn} 0.6s ease-out;
 `;
 
 const Title = styled.h3`

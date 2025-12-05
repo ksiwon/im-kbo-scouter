@@ -1,6 +1,6 @@
 // src/components/ComparisonChart.tsx
 import React, { useMemo } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import {
   BarChart,
   Bar,
@@ -13,12 +13,18 @@ import {
 } from 'recharts';
 import { Player } from '../types';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const ChartSection = styled.div`
   background: ${(p) => p.theme.colors.bg.tertiary};
   padding: 24px;
   border-radius: 16px;
   box-shadow: ${(p) => p.theme.shadows.lg};
   width: 100%;
+  animation: ${fadeIn} 0.6s ease-out;
 `;
 
 const Title = styled.h3`

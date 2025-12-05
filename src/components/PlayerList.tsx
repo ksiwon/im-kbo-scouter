@@ -1,15 +1,21 @@
 
 // src/components/PlayerList.tsx
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Player } from '../types';
 import { generateSuccessAnalysis } from '../utils/sabermetrics';
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const Container = styled.div`
   display: flex;
   gap: 1rem;
   height: 100%;
   width: 100%;
+  animation: ${fadeIn} 0.6s ease-out;
   
   @media (max-width: 1024px) {
     flex-direction: column;

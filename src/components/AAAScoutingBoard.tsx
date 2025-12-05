@@ -1,9 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Player } from '../types';
 import { calculateRisk, calculateSimpleKFS, generateDeepDiveAnalysis } from '../utils/sabermetrics';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const Container = styled.div`
+  animation: ${fadeIn} 0.6s ease-out;
   display: flex;
   gap: 1rem;
   height: 100%;

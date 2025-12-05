@@ -1,10 +1,16 @@
 // src/components/CorrelationChart.tsx
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Label } from 'recharts';
 import { Player } from '../types';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const ChartContainer = styled.div`
+  animation: ${fadeIn} 0.6s ease-out;
   background: ${props => props.theme.colors.bg.tertiary};
   padding: 2rem;
   border-radius: ${props => props.theme.borderRadius.xl};

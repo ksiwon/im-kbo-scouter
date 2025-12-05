@@ -3,8 +3,8 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(20px); rotate: 0deg; }
+  to { opacity: 1; transform: translateY(0); rotate: -2deg; }
 `;
 
 const ArticleContainer = styled.article`
