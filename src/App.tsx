@@ -243,7 +243,7 @@ function App() {
             하지만 그들 중 <Emphasis>절반 이상</Emphasis>은 1년도 채우지 못하고 짐을 쌉니다.
           </Text>
           <Text>
-            AAA에서 30홈런을 쳤던 거포가 KBO에서는 2할 푼대에 허덕이는 미스터리.
+            AAA에서 30홈런을 쳤던 거포가 KBO에서는 2할 초반대에 허덕이는 미스터리.
             우리는 그 해답을 <Emphasis>데이터</Emphasis>에서 찾았습니다.
           </Text>
           <ContextNote title="KEY QUESTION" icon="🔍">
@@ -264,7 +264,7 @@ function App() {
             <span className="highlight">wRC+의 배신</span>
           </Title>
           <Text>
-            루크 스캇, 모터, 그리고 수많은 "거포"들의 실패 사례를 분석했습니다.
+            지미 파레디스, 루크 스캇, 모터, 그리고 수많은 "거포"들의 실패 사례를 분석했습니다.
             그들의 공통점은 무엇이었을까요?
           </Text>
           <Text>
