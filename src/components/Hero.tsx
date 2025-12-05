@@ -117,7 +117,6 @@ const StatLabel = styled.div`
 const Footer = styled.div`
   position: absolute;
   bottom: 1rem;
-  left: 50%;
   transform: translateX(-50%);
   font-size: 0.7rem;
   color: ${props => props.theme.colors.text.disabled};
@@ -137,14 +136,14 @@ function Hero() {
       </MainTitle>
       
       <Subtitle>
-        AAA에서 30홈런을 쳤던 타자도 KBO에서는 2할 푼대에 허덕입니다.
+        AAA에서 30홈런을 쳤던 타자도 KBO에서는 2할 초반 대에 허덕입니다.
         <br />
         우리는 그 해답을 데이터에서 찾았습니다.
       </Subtitle>
       
       <StatsRow>
         <StatItem>
-          <StatNumber>65+</StatNumber>
+          <StatNumber>65명</StatNumber>
           <StatLabel>분석된 외국인 타자</StatLabel>
         </StatItem>
         <StatItem>
@@ -158,7 +157,7 @@ function Hero() {
       </StatsRow>
       
       <Footer>
-        KBO Foreign Hitter Predictor © 2025 | Data: FanGraphs.com
+        KBO Foreign Hitter Predictor © 2025 Siwon at KAIST AEL | Data: FanGraphs.com
       </Footer>
     </HeroContainer>
   );
