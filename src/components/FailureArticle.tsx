@@ -211,11 +211,11 @@ const FailureArticle: React.FC = () => {
         </PullQuote>
         
         <p>
-          루크 스캇(Luke Scott)을 기억하는가. MLB 통산 82홈런, 강력한 좌타 파워를 
-          갖춘 거포였다. 2014년 한화 이글스는 그에게 큰 기대를 걸었다. 
-          결과는? <span className="stat">타율 .211</span>, 
-          <span className="stat">11홈런</span>. 
-          그는 1년도 채우지 못하고 한국을 떠났다.
+          지미 파레디스(Jimmy Paredes)를 기억하는가. 2018년 두산 베어스는 
+          그에게 큰 기대를 걸었다. MLB 통산 20홈런, 스위치 히터로서의 잠재력.
+          결과는? <span className="stat">타율 .138</span>, 
+          <span className="stat">1홈런</span>. 
+          그는 시즌 초반 21경기만에 방출되며 짐을 쌌다.
         </p>
         
         <StatBox>

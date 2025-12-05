@@ -136,7 +136,7 @@ function Hero() {
       </MainTitle>
       
       <Subtitle>
-        AAA에서 30홈런을 쳤던 타자도 KBO에서는 2할 초반 대에 허덕입니다.
+        AAA에서 30홈런을 쳤던 타자도 KBO에서는 2할 초반대에 허덕입니다.
         <br />
         우리는 그 해답을 데이터에서 찾았습니다.
       </Subtitle>
