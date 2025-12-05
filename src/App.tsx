@@ -1,463 +1,394 @@
 // src/App.tsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { ThemeProvider } from 'styled-components';
 import { GlobalStyle, theme } from './styles/GlobalStyle';
 
+// Layout & Navigation
+import { ScrollyLayout, Step } from './components/ScrollyLayout';
+import SideNavigation from './components/SideNavigation';
+import ContextNote from './components/ContextNote';
+
 // Components
 import Hero from './components/Hero';
-import DistributionChart from './components/DistributionChart';
+import FailureArticle from './components/FailureArticle';
+import PlayerList from './components/PlayerList';
 import CorrelationChart from './components/CorrelationChart';
 import ComparisonChart from './components/ComparisonChart';
-import DeltaDistribution from './components/DeltaDistribution';
-import PlayerList from './components/PlayerList';
-import AAAScoutingBoard from './components/AAAScoutingBoard';
-import DraggableModal from './components/DraggableModal';
-import AAADashboard from './components/AAADashboard';
-
-// Pages
-import Dashboard from './pages/Dashboard';
-import PredictionModel from './pages/PredictionModel';
-
-import CorrelationAnalysis from './pages/CorrelationAnalysis';
+import DeltaInsights from './components/DeltaInsights';
 import KFSExplanation from './pages/KFSExplanation';
+import AAAScoutingBoard from './components/AAAScoutingBoard';
+import PredictionModel from './pages/PredictionModel';
 
 // Data
 import kboFirstYearData from './data/kbo_first_year_stats_matched.json';
 import preKboData from './data/pre_kbo_stats_matched.json';
 import aaaData from './data/aaa_2025_stats.json';
-import { ANALYSIS_DATA } from './data/analysisData';
+import { generateContextNote } from './utils/sabermetrics';
 
-// --- Styled Components ---
-
-const AppContainer = styled.div`
-  background: ${props => props.theme.colors.bg.primary};
+// Styled Components
+const Title = styled.h2`
   color: ${props => props.theme.colors.text.primary};
-  overflow-y: hidden;
-  overflow-x: auto;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  scroll-snap-type: x mandatory;
-  position: relative;
+  font-weight: 700;
+  line-height: 1.3;
   
-  /* 스크롤바 숨기기 (선택적) */
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-  }
-`;
-
-const Section = styled.section<{ dark?: boolean }>`
-  min-height: 100vh;
-  height: 100vh;
-  width: 100vw;
-  flex-shrink: 0;
-  scroll-snap-align: start;
-  overflow-y: auto;
-  padding: 2rem 1rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  background: ${props => props.dark
-    ? props.theme.colors.bg.secondary
-    : props.theme.colors.bg.primary};
-  position: relative;
-  
-  @media (max-width: 768px) {
-    padding: 2rem 1rem;
-  }
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: fadeIn 0.8s ease;
-  flex-shrink: 0;
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const SectionText = styled.p`
-  font-size: 1.2rem;
-  color: ${props => props.theme.colors.text.secondary};
-  text-align: center;
-  max-width: 800px;
-  line-height: 1.8;
-  margin-bottom: 1.5rem;
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
-`;
-
-const SubSectionTitle = styled.h3`
-  font-size: 1.5rem;
-  color: ${props => props.theme.colors.text.primary};
-  margin-bottom: 1rem;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  
-  span {
-    font-size: 1rem;
-    color: ${props => props.theme.colors.text.secondary};
-    font-weight: normal;
-    margin-left: 0.5rem;
-  }
-`;
-
-const ContentBox = styled.div`
-  max-width: 80%;
-  width: 100%;
-  margin: 1rem auto;
-`;
-
-const NavigationBar = styled.nav`
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(30, 39, 73, 0.9);
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  gap: 1.5rem;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-
-  @media (max-width: 768px) {
-    padding: 0.5rem 1rem;
-    gap: 0.5rem;
-    width: 90%;
-    justify-content: space-between;
-  }
-`;
-
-const NavLink = styled.button<{ active?: boolean }>`
-  background: none;
-  border: none;
-  color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.text.secondary};
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  
-  &:hover {
+  span.highlight {
     color: ${props => props.theme.colors.primary};
   }
 `;
 
-// --- Scroll Indicator Arrows ---
-
-const bounceLeft = keyframes`
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-10px); }
+const Text = styled.p`
+  color: ${props => props.theme.colors.text.secondary};
+  line-height: 1.7;
 `;
 
-const bounceRight = keyframes`
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(10px); }
+const Emphasis = styled.span`
+  color: ${props => props.theme.colors.primary};
+  font-weight: 600;
 `;
 
-const ArrowButton = styled.div<{ direction: 'left' | 'right' }>`
-  position: fixed;
-  top: 50%;
-  ${props => props.direction === 'left' ? 'left: 20px;' : 'right: 20px;'}
-  transform: translateY(-50%);
-  background: transparent;
-  color: white;
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`;
+
+const ScrollIndicator = styled.div`
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.colors.text.disabled};
+  font-size: 0.75rem;
+  animation: ${pulse} 2s ease-in-out infinite;
+  margin-top: 3rem;
+  opacity: 0.7;
+`;
+
+const ScrollArrow = styled.span`
+  font-size: 1.5rem;
+`;
+
+// Visual Container - 패딩 제거
+const VisualWrapper = styled.div<{ $fullHeight?: boolean }>`
+  width: 100%;
+  height: ${props => props.$fullHeight ? '100%' : 'auto'};
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  cursor: pointer;
-  z-index: 1000;
-  transition: all 0.3s ease;
-  animation: ${props => props.direction === 'left' ? bounceLeft : bounceRight} 2s infinite;
-
-  @media (max-width: 768px) {
-    display: none; /* 모바일에서는 화살표 숨김 (터치 스크롤이 직관적임) */
-  }
+  gap: 0.5rem;
+  padding: 0;
+  overflow: visible; /* Fixed double scroll */
 `;
 
+// 차트 컨테이너 - 전체 너비 사용
+const ChartContainer = styled.div`
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+`;
+
+// 전체 컨테이너 - AAA Scouting 등
+const FullContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 0.5rem;
+  box-sizing: border-box;
+`;
+
+// Navigation items
+const NAV_ITEMS = [
+  { id: 'intro', label: '인트로' },
+  { id: 'failure', label: '실패의 역사' },
+  { id: 'players', label: '성공 vs 실패' },
+  { id: 'correlation', label: '상관관계 분석' },
+  { id: 'distribution', label: '분포 & 델타' },
+  { id: 'kfs', label: 'KFS 로직' },
+  { id: 'scouting', label: '스카우팅 보드' },
+  { id: 'prediction', label: '예측 계산기' },
+];
+
 function App() {
-  const appContainerRef = useRef<HTMLDivElement>(null);
-  const [activeSection, setActiveSection] = useState<string>('hero');
+  const [activeStep, setActiveStep] = useState(0);
 
-  // 스크롤 화살표 상태
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
-
-  useEffect(() => {
-    const currentSection = document.getElementById(activeSection);
-    if (currentSection) {
-      currentSection.scrollTop = 0;
-    }
-  }, [activeSection]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // [수정] id가 있는 경우에만 activeSection을 업데이트하여 
-          // 내부 컴포넌트(예: chart의 section)가 잡히는 것을 방지
-          if (entry.isIntersecting && entry.target.id) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      {
-        root: appContainerRef.current,
-        threshold: 0.5
-      }
-    );
-
-    // appContainerRef 안의 직계 자식 section들만 관찰하도록 수정하는 것이 좋으나,
-    // querySelectorAll('section')을 쓰되 위에서 id 체크를 추가함.
-    const sections = document.querySelectorAll('section');
-    sections.forEach((section) => observer.observe(section));
-
-    return () => {
-      sections.forEach((section) => observer.unobserve(section));
-    };
-  }, []);
-
-  // 스크롤 이벤트 핸들러 (화살표 표시 여부 결정)
-  const handleScroll = () => {
-    if (appContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = appContainerRef.current;
-
-      // 맨 왼쪽인지 확인 (여유값 10px)
-      setShowLeftArrow(scrollLeft > 10);
-
-      // 맨 오른쪽인지 확인 (여유값 10px)
-      // scrollWidth - clientWidth 가 최대 스크롤 가능 값
-      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+  const handleNavigate = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // 초기 로드 및 리사이즈 시 스크롤 상태 체크
-  useEffect(() => {
-    const checkScroll = () => handleScroll();
-
-    window.addEventListener('resize', checkScroll);
-    // 초기 실행
-    checkScroll();
-
-    return () => window.removeEventListener('resize', checkScroll);
-  }, []);
-
-  const scrollToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', inline: 'start' });
-    }
-  };
-
-  const scrollByDirection = (direction: 'left' | 'right') => {
-    if (appContainerRef.current) {
-      const { clientWidth } = appContainerRef.current;
-      appContainerRef.current.scrollBy({
-        left: direction === 'left' ? -clientWidth : clientWidth,
-        behavior: 'smooth'
-      });
+  // Render visual content based on active step
+  const renderVisual = () => {
+    switch (activeStep) {
+      case 0: // Intro
+        return (
+          <VisualWrapper $fullHeight>
+            <Hero />
+          </VisualWrapper>
+        );
+        
+      case 1: // Failure Article
+        return (
+          <VisualWrapper>
+            <FailureArticle />
+          </VisualWrapper>
+        );
+        
+      case 2: // Top Players
+        return (
+          <VisualWrapper>
+            <ChartContainer>
+              <PlayerList 
+                kboData={kboFirstYearData.players} 
+                preKboData={preKboData.players} 
+              />
+            </ChartContainer>
+          </VisualWrapper>
+        );
+        
+      case 3: // Correlation
+        return (
+          <VisualWrapper>
+            <ChartContainer>
+              <CorrelationChart 
+                kboData={kboFirstYearData.players} 
+                preKboData={preKboData.players} 
+              />
+            </ChartContainer>
+          </VisualWrapper>
+        );
+        
+      case 4: // Distribution & Delta
+        return (
+          <VisualWrapper>
+            <ChartContainer>
+              <ComparisonChart 
+                kboData={kboFirstYearData.players} 
+                preKboData={preKboData.players} 
+              />
+            </ChartContainer>
+            <ChartContainer>
+              <DeltaInsights />
+            </ChartContainer>
+          </VisualWrapper>
+        );
+        
+      case 5: // KFS Explanation
+        return (
+          <VisualWrapper>
+            <ChartContainer>
+              <KFSExplanation />
+            </ChartContainer>
+          </VisualWrapper>
+        );
+        
+      case 6: // AAA Scouting
+        return (
+          <FullContainer>
+            <AAAScoutingBoard 
+              aaaData={aaaData.players} 
+              kboData={kboFirstYearData.players} 
+              preKboData={preKboData.players} 
+            />
+          </FullContainer>
+        );
+        
+      case 7: // Prediction
+        return (
+          <VisualWrapper>
+            <ChartContainer>
+              <PredictionModel 
+                kboData={kboFirstYearData.players} 
+                preKboData={preKboData.players} 
+                aaaData={aaaData.players} 
+              />
+            </ChartContainer>
+          </VisualWrapper>
+        );
+        
+      default:
+        return null;
     }
   };
 
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
+      
+      {/* Side Navigation */}
+      <SideNavigation 
+        items={NAV_ITEMS}
+        activeIndex={activeStep}
+        onNavigate={handleNavigate}
+      />
 
-      {/* 분석 모달 */}
-      {activeSection !== 'hero' && (
-        <DraggableModal data={ANALYSIS_DATA[activeSection]} />
-      )}
-
-      {/* 스크롤 화살표 */}
-      {showLeftArrow && (
-        <ArrowButton direction="left" onClick={() => scrollByDirection('left')}>
-          ‹
-        </ArrowButton>
-      )}
-      {showRightArrow && (
-        <ArrowButton direction="right" onClick={() => scrollByDirection('right')}>
-          ›
-        </ArrowButton>
-      )}
-
-      <AppContainer ref={appContainerRef} onScroll={handleScroll}>
-        <Hero />
-
-        <Section id="overview">
-          <SectionTitle>📊 데이터 개요</SectionTitle>
-          <SectionText>
-            2010-2024 KBO 외국인 타자들의 성공 패턴을 분석하고,
+      {/* Main Scrollytelling Layout */}
+      <ScrollyLayout 
+        onStepChange={setActiveStep}
+        visual={renderVisual()}
+      >
+        
+        {/* 1. Intro Section */}
+        <Step id="intro" sectionLabel="01 • 인트로">
+          <Title>
+            왜 MLB의 거포들은
             <br />
-            이를 바탕으로 2025년 AAA 선수들의 KBO 성공 가능성을 예측합니다.
-          </SectionText>
+            <span className="highlight">한국에서 실패하는가?</span>
+          </Title>
+          <Text>
+            매년 수많은 외국인 타자들이 "코리안 드림"을 꿈꾸며 KBO 리그의 문을 두드립니다.
+            하지만 그들 중 <Emphasis>절반 이상</Emphasis>은 1년도 채우지 못하고 짐을 쌉니다.
+          </Text>
+          <Text>
+            AAA에서 30홈런을 쳤던 거포가 KBO에서는 2할 푼대에 허덕이는 미스터리.
+            우리는 그 해답을 <Emphasis>데이터</Emphasis>에서 찾았습니다.
+          </Text>
+          <ContextNote title="KEY QUESTION" icon="🔍">
+            {generateContextNote('intro')}
+          </ContextNote>
+          
+          <ScrollIndicator>
+            <span>스크롤하여 분석 시작</span>
+            <ScrollArrow>↓</ScrollArrow>
+          </ScrollIndicator>
+        </Step>
 
-          <ContentBox>
-            <SubSectionTitle>
-              KBO 외국인 타자 데이터 <span>(2010-2024)</span>
-            </SubSectionTitle>
-            <Dashboard
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-
-          <ContentBox>
-            <SubSectionTitle>
-              2025 AAA 스카우팅 리포트 <span>(200PA 이상 158명)</span>
-            </SubSectionTitle>
-            <AAADashboard
-              aaaData={aaaData.players}
-            />
-          </ContentBox>
-        </Section>
-
-        <Section dark id="players">
-          <SectionTitle>🏆 Top Players 분석</SectionTitle>
-          <SectionText>
-            KBO 첫 해에 가장 뛰어난 성적을 기록한 선수들을 살펴봅니다.
+        {/* 2. Failure Article Section */}
+        <Step id="failure" sectionLabel="02 • 실패의 역사">
+          <Title>
+            잔혹한 기록,
             <br />
-            클릭하면 상세 정보를 볼 수 있습니다.
-          </SectionText>
-          <ContentBox>
-            <PlayerList
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-        </Section>
+            <span className="highlight">wRC+의 배신</span>
+          </Title>
+          <Text>
+            루크 스캇, 모터, 그리고 수많은 "거포"들의 실패 사례를 분석했습니다.
+            그들의 공통점은 무엇이었을까요?
+          </Text>
+          <Text>
+            2010년부터 2024년까지, KBO를 거쳐간 외국인 타자들의 데이터를 분석한 결과,
+            <Emphasis> 성공(재계약) 확률은 40% 미만</Emphasis>이었습니다.
+          </Text>
+          <ContextNote title="DATA INSIGHT" icon="📊">
+            {generateContextNote('failure')}
+          </ContextNote>
+        </Step>
 
-        <Section id="correlation">
-          <SectionTitle>🔗 상관 관계 분석</SectionTitle>
-          <SectionText>
-            KBO 입단 전 지표 중 어떤 것이 KBO에서의 성공을 예측할 수 있을까요?
+        {/* 3. Top Players Section */}
+        <Step id="players" sectionLabel="03 • 성공과 실패">
+          <Title>
+            성공과 실패의
             <br />
-            K%와 BB% 같은 선구 지표는 안정적이지만, wRC+는 환경 의존적입니다.
-          </SectionText>
-          <ContentBox>
-            <CorrelationAnalysis
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-          <ContentBox>
-            <CorrelationChart
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-        </Section>
+            <span className="highlight">갈림길</span>
+          </Title>
+          <Text>
+            테임즈, 로사리오 같은 전설적인 성공 사례와
+            팬들의 기억 속에서 잊혀진 실패 사례들.
+          </Text>
+          <Text>
+            그들의 AAA 성적표에는 어떤 차이가 있었을까요?
+            단순히 wRC+가 높다고 성공하는 것이 아닙니다.
+            <Emphasis> 성공한 선수들에게는 공통적인 'DNA'</Emphasis>가 있습니다.
+          </Text>
+        </Step>
 
-        <Section dark id="analysis">
-          <SectionTitle>📈 성적 분포 변화</SectionTitle>
-          <SectionText>
-            KBO 입단 전후로 선수들의 주요 지표가 어떻게 변화하는지 살펴봅니다.
+        {/* 4. Correlation Section */}
+        <Step id="correlation" sectionLabel="04 • 상관관계 분석">
+          <Title>
+            wRC+의 배신,
             <br />
-            평균적으로 타석은 증가하지만, wRC+는 리그 환경 차이로 인해 변동이 큽니다.
-          </SectionText>
-          <ContentBox>
-            <ComparisonChart
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-          <ContentBox>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-              <DistributionChart
-                kboData={kboFirstYearData.players}
-                preKboData={preKboData.players}
-              />
-              <DeltaDistribution
-                kboData={kboFirstYearData.players}
-                preKboData={preKboData.players}
-              />
-            </div>
-          </ContentBox>
-        </Section>
+            <span className="highlight">K%의 진실</span>
+          </Title>
+          <Text>
+            우리는 흔히 wRC+(조정 득점 생산력)를 타자의 능력을 보여주는 
+            가장 완벽한 지표라고 믿습니다. 하지만 리그가 바뀌면 이야기는 달라집니다.
+          </Text>
+          <Text>
+            데이터 분석 결과, <Emphasis>AAA wRC+와 KBO 성적의 상관관계는 극히 낮았습니다</Emphasis>.
+            반면, 삼진율(K%)과 볼넷 비율(BB%)은 리그 이동 후에도 놀라운 일관성을 보입니다.
+          </Text>
+          <ContextNote title="STATISTICAL FACT" icon="📈">
+            {generateContextNote('correlation')}
+          </ContextNote>
+        </Step>
 
-        <Section id="kfs-explanation">
-          <SectionTitle>📝 KFS Score란 무엇인가?</SectionTitle>
-          <SectionText>
-            KBO Foreigner Success Score는 15년간의 외국인 타자 데이터를 기반으로
+        {/* 5. Distribution Section */}
+        <Step id="distribution" sectionLabel="05 • 분포 & 델타">
+          <Title>
+            리그 적응 비용:
             <br />
-            Optimization하여 KBO에서의 성공 가능성을 예측하는 새로운 지표입니다.
-          </SectionText>
-          <ContentBox>
-            <KFSExplanation />
-          </ContentBox>
-        </Section>
+            <span className="highlight">Delta Analysis</span>
+          </Title>
+          <Text>
+            모든 선수는 리그를 옮길 때 '적응 비용'을 치릅니다.
+            KBO 리그는 AAA보다 투수들의 구속은 느리지만, 
+            <Emphasis>변화구 구사율이 높고 스트라이크 존이 다릅니다</Emphasis>.
+          </Text>
+          <Text>
+            평균적으로 타자들의 성적은 어떻게 변했을까요?
+            이 변화량(Delta)을 이해하는 것이 예측의 핵심입니다.
+          </Text>
+          <ContextNote title="DELTA INSIGHT" icon="📉">
+            {generateContextNote('distribution')}
+          </ContextNote>
+        </Step>
 
-        <Section dark id="aaa-scouting">
-          <SectionTitle>🎯 2025 AAA 스카우팅 보드</SectionTitle>
-          <SectionText>
-            158명의 2025 AAA 선수들을 KFS Score로 평가합니다.
+        {/* 6. KFS Explanation Section */}
+        <Step id="kfs" sectionLabel="06 • KFS 로직">
+          <Title>
+            KFS Score:
             <br />
-            K% 안정성(r≈0.50), BB% 안정성(r≈0.29), wRC+ 제한적 전이(r≈-0.12)
-          </SectionText>
-          <ContentBox>
-            <AAAScoutingBoard
-              aaaData={aaaData.players}
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-            />
-          </ContentBox>
-        </Section>
+            <span className="highlight">새로운 성공의 기준</span>
+          </Title>
+          <Text>
+            기존의 스카우팅 방식은 한계에 부딪혔습니다.
+            우리는 <Emphasis>환경 의존적인 지표(wRC+, HR)</Emphasis>의 가중치를 낮추고,
+            <Emphasis> 환경 독립적인 지표(K%, BB%, Contact%)</Emphasis>의 가중치를 높인
+            새로운 알고리즘 'KFS Score'를 개발했습니다.
+          </Text>
+          <ContextNote title="ALGORITHM" icon="🧮">
+            {generateContextNote('kfs')}
+          </ContextNote>
+        </Step>
 
-        <Section id="prediction">
-          <SectionTitle>🔮 KBO Foreigner Success Score</SectionTitle>
-          <SectionText>
-            선수의 Pre-KBO 통계를 입력하거나 AAA 선수를 선택하여 KBO 성적을 예측합니다.
+        {/* 7. AAA Scouting Section */}
+        <Step id="scouting" sectionLabel="07 • 스카우팅 보드">
+          <Title>
+            2025 AAA
             <br />
-            선구 지표가 환경 의존적 지표(wRC+)보다 더 나은 안정성을 보입니다.
-          </SectionText>
-          <ContentBox>
-            <PredictionModel
-              kboData={kboFirstYearData.players}
-              preKboData={preKboData.players}
-              aaaData={aaaData.players}
-            />
-          </ContentBox>
-        </Section>
+            <span className="highlight">스카우팅 리포트</span>
+          </Title>
+          <Text>
+            2025년, KBO 구단들이 주목해야 할 선수는 누구일까요?
+            <Emphasis> 158명의 AAA 타자</Emphasis>들을 KFS Score로 분석했습니다.
+          </Text>
+          <Text>
+            우측의 리스트에서 선수를 선택하여 상세 분석을 확인하세요.
+            <Emphasis> 스탯 영역을 클릭</Emphasis>하면 심층 분석(Deep Dive)이 제공됩니다.
+          </Text>
+          <ContextNote title="SCOUTING TIP" icon="🎯">
+            {generateContextNote('aaa-scouting')}
+          </ContextNote>
+        </Step>
 
-        <NavigationBar>
-          <NavLink active={activeSection === 'hero'} onClick={() => scrollToSection('hero')}>홈</NavLink>
-          <NavLink active={activeSection === 'overview'} onClick={() => scrollToSection('overview')}>개요</NavLink>
-          <NavLink active={activeSection === 'players'} onClick={() => scrollToSection('players')}>Top Players</NavLink>
-          <NavLink active={activeSection === 'correlation'} onClick={() => scrollToSection('correlation')}>상관 관계</NavLink>
-          <NavLink active={activeSection === 'analysis'} onClick={() => scrollToSection('analysis')}>분석</NavLink>
-          <NavLink active={activeSection === 'kfs-explanation'} onClick={() => scrollToSection('kfs-explanation')}>KFS란?</NavLink>
-          <NavLink active={activeSection === 'aaa-scouting'} onClick={() => scrollToSection('aaa-scouting')}>AAA 스카우팅</NavLink>
-          <NavLink active={activeSection === 'prediction'} onClick={() => scrollToSection('prediction')}>KFS Score</NavLink>
-        </NavigationBar>
-      </AppContainer>
+        {/* 8. Prediction Section */}
+        <Step id="prediction" sectionLabel="08 • 예측 계산기">
+          <Title>
+            직접 확인해보세요
+          </Title>
+          <Text>
+            궁금한 선수가 있나요?
+            AAA 성적을 입력하거나 선수를 선택하여
+            <Emphasis> KBO 예상 성적과 성공 확률</Emphasis>을 시뮬레이션해보세요.
+          </Text>
+          <ContextNote title="TRY IT" icon="🔮">
+            {generateContextNote('prediction')}
+          </ContextNote>
+        </Step>
+
+      </ScrollyLayout>
     </ThemeProvider>
   );
 }

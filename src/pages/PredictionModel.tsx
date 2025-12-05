@@ -1,6 +1,6 @@
 // src/pages/PredictionModel.tsx
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { 
   Card, 
   CardTitle, 
@@ -14,23 +14,29 @@ import {
 import { Player } from '../types';
 import { calculateKFSScore } from '../utils/kfsScore';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const PredictionContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${props => props.theme.spacing.xl};
+  gap: 1rem;
+  animation: ${fadeIn} 0.6s ease-out;
 `;
 
 const ResultCard = styled(Card)`
-  margin-top: ${props => props.theme.spacing.xl};
+  margin-top: 1rem;
   background: ${props => props.theme.colors.bg.secondary};
   text-align: center;
 `;
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: ${props => props.theme.spacing.lg};
-  margin-top: ${props => props.theme.spacing.lg};
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
 `;
 
 const SuccessIndicator = styled.div<{ score: number }>`
@@ -75,8 +81,8 @@ const ButtonGroup = styled.div`
 `;
 
 const ScoreBreakdown = styled.div`
-  margin-top: 2rem;
-  padding: 1.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: ${props => props.theme.borderRadius.lg};
   text-align: left;

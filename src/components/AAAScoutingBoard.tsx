@@ -1,40 +1,44 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Player } from '../types';
-import { calculateKFSScore } from '../utils/kfsScore';
+import { calculateRisk, calculateSimpleKFS, generateDeepDiveAnalysis } from '../utils/sabermetrics';
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const Container = styled.div`
+  animation: ${fadeIn} 0.6s ease-out;
   display: flex;
-  gap: 1.5rem;
-  max-height: 100vh;
+  gap: 1rem;
+  height: 100%;
   width: 100%;
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    height: auto;
-  }
+  overflow: hidden;
 `;
 
 const LeftPanel = styled.div`
-  flex: 1;
+  flex: 0 0 280px;
   background: ${props => props.theme.colors.bg.tertiary};
   border-radius: ${props => props.theme.borderRadius.xl};
-  padding: 1rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   overflow: hidden;
 `;
 
 const RightPanel = styled.div`
-  flex: 3;
+  flex: 1;
   background: ${props => props.theme.colors.bg.secondary};
   border-radius: ${props => props.theme.borderRadius.xl};
-  padding: 2rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  position: relative;
   overflow-y: auto;
+  
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
 `;
 
 const FilterSection = styled.div`
@@ -45,271 +49,137 @@ const FilterSection = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.6rem;
   background: ${props => props.theme.colors.bg.secondary};
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: ${props => props.theme.borderRadius.lg};
   color: ${props => props.theme.colors.text.primary};
-  font-size: 0.9rem;
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-  }
+  font-size: 0.85rem;
+  &::placeholder { color: ${props => props.theme.colors.text.disabled}; }
+  &:focus { outline: none; border-color: ${props => props.theme.colors.primary}; }
 `;
 
 const SortContainer = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
 `;
 
-const SortButton = styled.button<{ active?: boolean }>`
+const SortButton = styled.button<{ $active?: boolean }>`
   flex: 1;
-  padding: 0.5rem;
-  background: ${props => props.active
-    ? props.theme.colors.gradient.primary
-    : props.theme.colors.bg.secondary
-  };
+  padding: 0.4rem;
+  background: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.bg.secondary};
   color: ${props => props.theme.colors.text.primary};
   border: none;
   border-radius: ${props => props.theme.borderRadius.md};
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  transition: all 0.2s ease;
 `;
 
-const PlayerList = styled.div`
+const PlayerListContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding-right: 0.5rem;
-
-  /* Custom Scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-  }
+  gap: 0.4rem;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
 `;
 
-const CompactPlayerCard = styled.div<{ selected?: boolean; riskLevel: string }>`
+const CompactPlayerCard = styled.div<{ $selected?: boolean }>`
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.25rem;
-  padding: 0.75rem;
-  background: ${props => props.selected ? props.theme.colors.primary + '20' : props.theme.colors.bg.secondary};
-  border: 1px solid ${props => props.selected ? props.theme.colors.primary : 'transparent'};
-  border-left: 4px solid ${props =>
-    props.riskLevel === 'S' ? '#00d2d3' : // Cyan for Elite
-    props.riskLevel === 'A' ? '#34a853' : // Green for Low Risk
-    props.riskLevel === 'B' ? '#fbbc04' : // Yellow for Moderate
-    props.riskLevel === 'C' ? '#ff9f43' : // Orange for High
-    '#ea4335' // Red for Very High
-  };
+  padding: 0.5rem;
+  background: ${props => props.$selected ? props.theme.colors.primary + '20' : props.theme.colors.bg.secondary};
+  border: 1px solid ${props => props.$selected ? props.theme.colors.primary : 'transparent'};
   border-radius: ${props => props.theme.borderRadius.md};
   cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${props => props.theme.colors.bg.hover};
-    transform: translateX(4px);
-  }
+  &:hover { background: ${props => props.theme.colors.bg.hover}; }
 `;
 
 const PlayerName = styled.div`
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: ${props => props.theme.colors.text.primary};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const PlayerMeta = styled.div`
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: ${props => props.theme.colors.text.secondary};
   grid-column: 1 / -1;
 `;
 
-const ScoreMiniBadge = styled.div<{ score: number }>`
-  font-size: 0.85rem;
+const KFSBadge = styled.div<{ $score: number }>`
+  font-size: 0.75rem;
   font-weight: 700;
-  color: ${props =>
-    props.score >= 50 ? props.theme.colors.success :
-      props.score >= 35 ? props.theme.colors.warning :
-        props.theme.colors.danger
-  };
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: ${props => props.$score >= 70 ? 'rgba(0, 210, 211, 0.2)' : props.$score >= 50 ? 'rgba(52, 168, 83, 0.2)' : props.$score >= 30 ? 'rgba(251, 188, 4, 0.2)' : 'rgba(234, 67, 53, 0.2)'};
+  color: ${props => props.$score >= 70 ? '#00d2d3' : props.$score >= 50 ? '#34a853' : props.$score >= 30 ? '#fbbc04' : '#ea4335'};
 `;
 
-// Right Panel Components
 const DetailHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const DetailTitle = styled.h2`
-  font-size: 2.5rem;
+  font-size: 1.4rem;
   margin: 0;
-  background: ${props => props.theme.colors.gradient.primary};
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: ${props => props.theme.colors.primary};
 `;
 
 const DetailSubtitle = styled.div`
-  font-size: 1.2rem;
-  color: ${props => props.theme.colors.text.secondary};
-  margin-top: 0.5rem;
-`;
-
-const ScoreBadge = styled.div<{ score: number }>`
-  padding: 0.5rem 1.5rem;
-  border-radius: ${props => props.theme.borderRadius.lg};
-  background: ${props =>
-    props.score >= 50 ? props.theme.colors.success :
-      props.score >= 35 ? props.theme.colors.warning :
-        props.theme.colors.danger
-  };
-  color: white;
-  font-weight: 700;
-  font-size: 2rem;
-  text-align: center;
-  box-shadow: ${props => props.theme.shadows.lg};
-  
-  span {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 400;
-    opacity: 0.9;
-  }
-`;
-
-const PredictionGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: rgba(66, 133, 244, 0.05);
-  border-radius: ${props => props.theme.borderRadius.lg};
-  border: 1px solid rgba(66, 133, 244, 0.1);
-`;
-
-const PredictionItem = styled.div`
-  text-align: center;
-`;
-
-const PredictionValue = styled.div<{ color?: string }>`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${props => props.color || props.theme.colors.text.primary};
-  margin-bottom: 0.5rem;
-`;
-
-const PredictionLabel = styled.div`
-  font-size: 0.9rem;
-  color: ${props => props.theme.colors.text.secondary};
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 1.2rem;
-  color: ${props => props.theme.colors.text.primary};
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-`;
-
-const StatBox = styled.div`
-  background: ${props => props.theme.colors.bg.tertiary};
-  padding: 1rem;
-  border-radius: ${props => props.theme.borderRadius.md};
-  text-align: center;
-`;
-
-const StatValue = styled.div`
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: ${props => props.theme.colors.primary};
-  margin-bottom: 0.25rem;
-`;
-
-const StatLabel = styled.div`
   font-size: 0.8rem;
   color: ${props => props.theme.colors.text.secondary};
 `;
 
-const InsightsContainer = styled.div`
+const AnalysisSummary = styled.div`
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  color: #d2dae2;
+  line-height: 1.5;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+`;
+
+const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-`;
-
-const InsightBox = styled.div<{ type: 'strength' | 'concern' }>`
-  padding: 1rem;
-  background: ${props => props.type === 'strength'
-    ? 'rgba(52, 168, 83, 0.05)'
-    : 'rgba(234, 67, 53, 0.05)'
-  };
-  border-radius: ${props => props.theme.borderRadius.md};
-  border: 1px solid ${props => props.type === 'strength'
-    ? 'rgba(52, 168, 83, 0.1)'
-    : 'rgba(234, 67, 53, 0.1)'
-  };
-`;
-
-const InsightList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const InsightItem = styled.li<{ type: 'strength' | 'concern' }>`
-  font-size: 0.9rem;
-  color: ${props => props.type === 'strength'
-    ? props.theme.colors.success
-    : props.theme.colors.warning
-  };
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: flex-start;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   gap: 0.5rem;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+`;
 
-  &::before {
-    content: ${props => props.type === 'strength' ? '"✓"' : '"⚠"'};
-    font-weight: bold;
-  }
+const StatBox = styled.div`
+  text-align: center;
+  padding: 0.25rem;
+`;
+
+const StatValue = styled.div`
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.primary};
+`;
+
+const StatLabel = styled.div`
+  font-size: 0.6rem;
+  color: ${props => props.theme.colors.text.secondary};
 `;
 
 const PaginationControls = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
@@ -318,149 +188,189 @@ const PageButton = styled.button`
   border: none;
   color: ${props => props.theme.colors.text.secondary};
   cursor: pointer;
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-  &:hover:not(:disabled) {
-    color: ${props => props.theme.colors.primary};
-  }
+  &:disabled { opacity: 0.3; }
+`;
+
+const PageInfo = styled.span`
+  font-size: 0.7rem;
+  color: ${props => props.theme.colors.text.disabled};
+`;
+
+// KFS Score Breakdown Section
+const KFSBreakdownSection = styled.div`
+  background: rgba(100, 108, 255, 0.05);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+`;
+
+const KFSBreakdownTitle = styled.h4`
+  font-size: 0.8rem;
+  color: #646cff;
+  margin: 0 0 0.35rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const KFSFinalScore = styled.span`
+  font-size: 1.1rem;
+  font-weight: 700;
+`;
+
+const KFSBreakdownGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
+`;
+
+const KFSBreakdownItem = styled.div`
+  text-align: center;
+  padding: 0.3rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+`;
+
+const KFSBreakdownValue = styled.div`
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+`;
+
+const KFSBreakdownLabel = styled.div`
+  font-size: 0.55rem;
+  color: ${props => props.theme.colors.text.secondary};
+  margin-bottom: 0.1rem;
+`;
+
+const KFSBreakdownWeight = styled.div`
+  font-size: 0.5rem;
+  color: #646cff;
+  margin-top: 0.1rem;
+`;
+
+const DeepDiveSection = styled.div`
+  background: rgba(75, 207, 250, 0.05);
+  border: 1px solid rgba(75, 207, 250, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: auto;
+`;
+
+const DeepDiveTitle = styled.h4`
+  font-size: 0.8rem;
+  color: #4bcffa;
+  margin: 0 0 0.35rem 0;
+`;
+
+const DeepDiveContent = styled.div`
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: ${props => props.theme.colors.text.secondary};
+`;
+
+const Verdict = styled.div<{ $score: number }>`
+  background: ${props => props.$score >= 70 ? 'rgba(0, 210, 211, 0.1)' : props.$score >= 50 ? 'rgba(52, 168, 83, 0.1)' : 'rgba(251, 188, 4, 0.1)'};
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #e8eaed;
+  margin-top: 0.35rem;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: ${props => props.theme.colors.text.disabled};
 `;
 
 interface AAAScoutingBoardProps {
   aaaData: Player[];
-  kboData: Player[];
-  preKboData: Player[];
+  kboData?: Player[];
+  preKboData?: Player[];
 }
 
-function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
-  const [sortBy, setSortBy] = useState<'score' | 'wrc_plus' | 'age'>('score');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const PLAYERS_PER_PAGE = 20;
+// KFS Score 분해 계산 함수
+const calculateKFSBreakdown = (player: Player) => {
+  const normalize = (value: number, min: number, max: number): number => {
+    const normalized = (value - min) / (max - min);
+    return Math.max(0, Math.min(1, normalized));
+  };
 
-  const playersWithScores = useMemo(() => {
+  const babip = player.babip || 0.300;
+  const obp = player.obp || 0.330;
+  const hr = player.hr || 10;
+  const gdp = player.gdp || 8;
+  const avg = player.avg || 0.260;
+
+  const babipNorm = normalize(babip, 0.250, 0.380) * 100;
+  const obpNorm = normalize(obp, 0.280, 0.420) * 100;
+  const hrNorm = normalize(hr, 0, 35) * 100;
+  const gdpNorm = normalize(gdp, 0, 20) * 100;
+  const avgNorm = normalize(avg, 0.220, 0.320) * 100;
+
+  const weights = { babip: 0.224, obp: 0.218, hr: 0.216, gdp: 0.198, avg: 0.174 };
+
+  return {
+    babip: { value: babip, normalized: babipNorm, weighted: babipNorm * weights.babip, weight: '22.4%' },
+    obp: { value: obp, normalized: obpNorm, weighted: obpNorm * weights.obp, weight: '21.8%' },
+    hr: { value: hr, normalized: hrNorm, weighted: hrNorm * weights.hr, weight: '21.6%' },
+    gdp: { value: gdp, normalized: gdpNorm, weighted: gdpNorm * weights.gdp, weight: '19.8%' },
+    avg: { value: avg, normalized: avgNorm, weighted: avgNorm * weights.avg, weight: '17.4%' },
+  };
+};
+
+function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
+  const [sortBy, setSortBy] = useState<'kfs' | 'wrc_plus' | 'age'>('kfs');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPlayer, setSelectedPlayer] = useState<Player & { analysis: ReturnType<typeof calculateRisk>; kfsScore: number } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PLAYERS_PER_PAGE = 8;
+
+  const playersWithAnalysis = useMemo(() => {
     return aaaData
       .filter(p => p.pa && p.pa >= 200)
-      .map(player => {
-        const result = calculateKFSScore({
-          wrcPlus: player.wrc_plus || 100,
-          kPct: player.k_pct || 20,
-          bbPct: player.bb_pct || 8,
-          hr: player.hr || 10,
-          pa: player.pa || 300,
-          babip: player.babip || 0.300,
-          obp: player.obp || 0.320,
-          slg: player.slg || 0.400,
-          gdp: player.gdp || 10,
-          avg: player.avg || 0.280,
-          woba: player.woba || 0.350,
-        });
-
-        let riskLevel: 'S' | 'A' | 'B' | 'C' | 'D' = 'D';
-        if (result.score >= 65) riskLevel = 'S';
-        else if (result.score >= 50) riskLevel = 'A';
-        else if (result.score >= 35) riskLevel = 'B';
-        else if (result.score >= 20) riskLevel = 'C';
-
-        const strengths: string[] = [];
-        const kPct = player.k_pct || 20;
-        const bbPct = player.bb_pct || 8;
-        const hr = player.hr || 10;
-        const pa = player.pa || 300;
-        const age = player.age || 28;
-        const swstrPct = player.swstr_pct || 10;
-        const wrcPlus = player.wrc_plus || 100;
-        const obp = player.obp || 0.320;
-        const babip = player.babip || 0.300;
-
-        if (kPct < 18) strengths.push(`엘리트 컨택 능력(K% ${kPct.toFixed(1)})`);
-        else if (kPct < 22) strengths.push(`우수한 컨택 능력(K% ${kPct.toFixed(1)})`);
-        if (bbPct > 12) strengths.push(`뛰어난 선구안(BB% ${bbPct.toFixed(1)})`);
-        else if (bbPct > 9) strengths.push(`좋은 선구안(BB% ${bbPct.toFixed(1)})`);
-        if ((hr / pa) > 0.06) strengths.push(`강력한 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
-        else if ((hr / pa) > 0.04) strengths.push(`준수한 파워(${hr}HR)`);
-        if (swstrPct < 9) strengths.push(`탁월한 스윙 컨택(SwStr% ${swstrPct.toFixed(1)})`);
-        if (age < 25) strengths.push(`매우 젊음(${age}세)`);
-        else if (age < 27) strengths.push(`젊은 나이(${age}세)`);
-        if (wrcPlus > 140) strengths.push(`AAA 엘리트급(wRC+ ${wrcPlus})`);
-        else if (wrcPlus > 120) strengths.push(`AAA 우수 성적(wRC+ ${wrcPlus})`);
-        if (pa > 450) strengths.push(`충분한 샘플(${pa} PA)`);
-        else if (pa > 350) strengths.push(`적정 샘플(${pa} PA)`);
-        if (obp > 0.380) strengths.push(`높은 출루율(OBP ${obp.toFixed(3)})`);
-        if (babip > 0.300 && babip < 0.370) strengths.push(`안정적인 BABIP(${babip.toFixed(3)})`);
-
-        const concerns: string[] = [];
-        const gbPct = player.gb_pct || 45;
-        const iffbPct = player.iffb_pct || 10;
-
-        if (kPct > 28) concerns.push(`매우 높은 삼진율(K% ${kPct.toFixed(1)})`);
-        else if (kPct > 24) concerns.push(`높은 삼진율(K% ${kPct.toFixed(1)})`);
-        if (bbPct < 5) concerns.push(`매우 낮은 출루 능력(BB% ${bbPct.toFixed(1)})`);
-        else if (bbPct < 7) concerns.push(`낮은 출루 능력(BB% ${bbPct.toFixed(1)})`);
-        if ((hr / pa) < 0.025) concerns.push(`제한적 장타력(${hr}HR, ${((hr / pa) * 100).toFixed(1)}%)`);
-        if (swstrPct > 12) concerns.push(`높은 헛스윙율(SwStr% ${swstrPct.toFixed(1)})`);
-        if (iffbPct > 12) concerns.push(`높은 내야플라이 비율(IFFB% ${iffbPct.toFixed(1)})`);
-        if (gbPct > 50) concerns.push(`높은 땅볼 비율(GB% ${gbPct.toFixed(1)})`);
-        if (age > 31) concerns.push(`높은 나이(${age}세)`);
-        else if (age > 29) concerns.push(`나이 고려 필요(${age}세)`);
-        if (pa < 250) concerns.push(`제한적 샘플(${pa} PA)`);
-        if (wrcPlus < 95) concerns.push(`AAA 평균 이하(wRC+ ${wrcPlus})`);
-        if (babip > 0.400) concerns.push(`과도하게 높은 BABIP(${babip.toFixed(3)}) - 운 요소 가능`);
-        else if (babip < 0.270) concerns.push(`낮은 BABIP(${babip.toFixed(3)})`);
-        if (obp < 0.310) concerns.push(`낮은 출루율(OBP ${obp.toFixed(3)})`);
-
-        return {
-          ...player,
-          kScore: {
-            score: result.score,
-            predictedWrcPlus: result.predictedWrcPlus,
-            successProbability: result.successProbability,
-            riskLevel,
-            strengths,
-            concerns
-          }
-        };
-      });
+      .map(player => ({
+        ...player,
+        analysis: calculateRisk(player),
+        kfsScore: calculateSimpleKFS(player)
+      }));
   }, [aaaData]);
 
   const filteredPlayers = useMemo(() => {
-    let filtered = playersWithScores;
-
+    let filtered = playersWithAnalysis;
     if (searchTerm) {
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.team?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     filtered.sort((a, b) => {
-      if (sortBy === 'score') return b.kScore.score - a.kScore.score;
+      if (sortBy === 'kfs') return b.kfsScore - a.kfsScore;
       if (sortBy === 'wrc_plus') return (b.wrc_plus || 0) - (a.wrc_plus || 0);
       if (sortBy === 'age') return (a.age || 30) - (b.age || 30);
       return 0;
     });
-
     return filtered;
-  }, [playersWithScores, searchTerm, sortBy]);
+  }, [playersWithAnalysis, searchTerm, sortBy]);
 
   const totalPages = Math.ceil(filteredPlayers.length / PLAYERS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PLAYERS_PER_PAGE;
-  const endIndex = startIndex + PLAYERS_PER_PAGE;
-  const currentPlayers = filteredPlayers.slice(startIndex, endIndex);
+  const currentPlayers = filteredPlayers.slice((currentPage - 1) * PLAYERS_PER_PAGE, currentPage * PLAYERS_PER_PAGE);
 
-  // Auto-select first player on load or filter change
   useEffect(() => {
     if (currentPlayers.length > 0 && !selectedPlayer) {
       setSelectedPlayer(currentPlayers[0]);
     }
   }, [currentPlayers, selectedPlayer]);
 
-  // Reset page when filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, sortBy]);
+
+  const deepDive = selectedPlayer ? generateDeepDiveAnalysis(selectedPlayer) : null;
+  const kfsBreakdown = selectedPlayer ? calculateKFSBreakdown(selectedPlayer) : null;
 
   return (
     <Container>
@@ -468,178 +378,119 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
         <FilterSection>
           <SearchInput
             type="text"
-            placeholder="Search players..."
+            placeholder="선수 또는 팀 검색..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <SortContainer>
-            <SortButton active={sortBy === 'score'} onClick={() => setSortBy('score')}>KFS</SortButton>
-            <SortButton active={sortBy === 'wrc_plus'} onClick={() => setSortBy('wrc_plus')}>wRC+</SortButton>
-            <SortButton active={sortBy === 'age'} onClick={() => setSortBy('age')}>Age</SortButton>
+            <SortButton $active={sortBy === 'kfs'} onClick={() => setSortBy('kfs')}>KFS</SortButton>
+            <SortButton $active={sortBy === 'wrc_plus'} onClick={() => setSortBy('wrc_plus')}>wRC+</SortButton>
+            <SortButton $active={sortBy === 'age'} onClick={() => setSortBy('age')}>연령</SortButton>
           </SortContainer>
         </FilterSection>
 
-        <PlayerList>
+        <PlayerListContainer>
           {currentPlayers.map((player) => (
             <CompactPlayerCard
               key={player.name}
-              selected={selectedPlayer?.name === player.name}
-              riskLevel={player.kScore.riskLevel}
+              $selected={selectedPlayer?.name === player.name}
               onClick={() => setSelectedPlayer(player)}
             >
               <PlayerName>{player.name}</PlayerName>
-              <ScoreMiniBadge score={player.kScore.score}>{player.kScore.score}</ScoreMiniBadge>
-              <PlayerMeta>
-                {player.team} • {player.age}yo • {player.pa}PA
-              </PlayerMeta>
+              <KFSBadge $score={player.kfsScore}>{player.kfsScore.toFixed(1)}</KFSBadge>
+              <PlayerMeta>{player.team} • {player.age}세 • {player.pa}PA</PlayerMeta>
             </CompactPlayerCard>
           ))}
-        </PlayerList>
+        </PlayerListContainer>
 
         <PaginationControls>
-          <PageButton
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-          >
-            ←
-          </PageButton>
-          <span style={{ fontSize: '0.8rem', color: '#aaa' }}>
-            {currentPage} / {totalPages}
-          </span>
-          <PageButton
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-          >
-            →
-          </PageButton>
+          <PageButton disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>←</PageButton>
+          <PageInfo>{currentPage} / {totalPages} ({filteredPlayers.length}명)</PageInfo>
+          <PageButton disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>→</PageButton>
         </PaginationControls>
       </LeftPanel>
 
       <RightPanel>
-        {selectedPlayer ? (
+        {selectedPlayer && kfsBreakdown ? (
           <>
             <DetailHeader>
               <div>
                 <DetailTitle>{selectedPlayer.name}</DetailTitle>
-                <DetailSubtitle>
-                  {selectedPlayer.team} • {selectedPlayer.age} years old • {selectedPlayer.pa} PA
-                </DetailSubtitle>
+                <DetailSubtitle>{selectedPlayer.team} • {selectedPlayer.age}세 • {selectedPlayer.pa} PA</DetailSubtitle>
               </div>
-              <ScoreBadge score={selectedPlayer.kScore.score}>
-                {selectedPlayer.kScore.score}
-                <span>KFS Score</span>
-              </ScoreBadge>
+              <div style={{ textAlign: 'right' }}>
+                <KFSBadge $score={selectedPlayer.kfsScore} style={{ fontSize: '1.1rem', padding: '0.3rem 0.6rem' }}>
+                  KFS {selectedPlayer.kfsScore.toFixed(1)}
+                </KFSBadge>
+              </div>
             </DetailHeader>
 
-            <SectionTitle>📊 KBO Adaptation Prediction</SectionTitle>
-            <PredictionGrid>
-              <PredictionItem>
-                <PredictionValue color="#4285f4">{selectedPlayer.kScore.predictedWrcPlus}</PredictionValue>
-                <PredictionLabel>Predicted wRC+</PredictionLabel>
-              </PredictionItem>
-              <PredictionItem>
-                <PredictionValue color="#34a853">{selectedPlayer.kScore.score}</PredictionValue>
-                <PredictionLabel>KFS Score</PredictionLabel>
-              </PredictionItem>
-              <PredictionItem>
-                <PredictionValue
-                  color={
-                    selectedPlayer.kScore.riskLevel === 'S' ? '#00d2d3' :
-                    selectedPlayer.kScore.riskLevel === 'A' ? '#34a853' :
-                    selectedPlayer.kScore.riskLevel === 'B' ? '#fbbc04' :
-                    selectedPlayer.kScore.riskLevel === 'C' ? '#ff9f43' :
-                    '#ea4335'
-                  }
-                >
-                  {selectedPlayer.kScore.riskLevel} (
-                  {selectedPlayer.kScore.riskLevel === 'S' ? 'Elite' :
-                   selectedPlayer.kScore.riskLevel === 'A' ? 'Low Risk' :
-                   selectedPlayer.kScore.riskLevel === 'B' ? 'Moderate' :
-                   selectedPlayer.kScore.riskLevel === 'C' ? 'High Risk' : 'Critical'}
-                  )
-                </PredictionValue>
-                <PredictionLabel>Risk Level</PredictionLabel>
-              </PredictionItem>
-            </PredictionGrid>
+            <AnalysisSummary>{selectedPlayer.analysis.summary}</AnalysisSummary>
 
-            <SectionTitle>📈 2025 AAA Stats</SectionTitle>
+            <h3 style={{ color: '#fff', marginBottom: '0.35rem', fontSize: '0.85rem' }}>📊 2025 AAA 핵심 스탯</h3>
             <StatsGrid>
-              <StatBox>
-                <StatValue>{selectedPlayer.avg?.toFixed(3)}</StatValue>
-                <StatLabel>AVG</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{selectedPlayer.obp?.toFixed(3)}</StatValue>
-                <StatLabel>OBP</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{selectedPlayer.slg?.toFixed(3)}</StatValue>
-                <StatLabel>SLG</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{((selectedPlayer.obp || 0) + (selectedPlayer.slg || 0)).toFixed(3)}</StatValue>
-                <StatLabel>OPS</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{selectedPlayer.wrc_plus}</StatValue>
-                <StatLabel>wRC+</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{selectedPlayer.hr}</StatValue>
-                <StatLabel>HR</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{selectedPlayer.bb_pct?.toFixed(1)}%</StatValue>
-                <StatLabel>BB%</StatLabel>
-              </StatBox>
-              <StatBox>
-                <StatValue>{selectedPlayer.k_pct?.toFixed(1)}%</StatValue>
-                <StatLabel>K%</StatLabel>
-              </StatBox>
+              <StatBox><StatValue>{selectedPlayer.avg?.toFixed(3)}</StatValue><StatLabel>AVG</StatLabel></StatBox>
+              <StatBox><StatValue>{selectedPlayer.obp?.toFixed(3)}</StatValue><StatLabel>OBP</StatLabel></StatBox>
+              <StatBox><StatValue>{selectedPlayer.slg?.toFixed(3)}</StatValue><StatLabel>SLG</StatLabel></StatBox>
+              <StatBox><StatValue>{((selectedPlayer.obp || 0) + (selectedPlayer.slg || 0)).toFixed(3)}</StatValue><StatLabel>OPS</StatLabel></StatBox>
+              <StatBox><StatValue>{selectedPlayer.wrc_plus}</StatValue><StatLabel>wRC+</StatLabel></StatBox>
+              <StatBox><StatValue>{selectedPlayer.hr}</StatValue><StatLabel>HR</StatLabel></StatBox>
+              <StatBox><StatValue>{selectedPlayer.bb_pct?.toFixed(1)}%</StatValue><StatLabel>BB%</StatLabel></StatBox>
+              <StatBox><StatValue>{selectedPlayer.k_pct?.toFixed(1)}%</StatValue><StatLabel>K%</StatLabel></StatBox>
             </StatsGrid>
 
-            <InsightsContainer>
-              <div>
-                <SectionTitle>✅ Strengths</SectionTitle>
-                <InsightBox type="strength">
-                  {selectedPlayer.kScore.strengths.length > 0 ? (
-                    <InsightList>
-                      {selectedPlayer.kScore.strengths.map((s: string, i: number) => (
-                        <InsightItem key={i} type="strength">{s}</InsightItem>
-                      ))}
-                    </InsightList>
-                  ) : (
-                    <div style={{ color: '#aaa', fontSize: '0.9rem' }}>No specific strengths detected</div>
-                  )}
-                </InsightBox>
-              </div>
-              <div>
-                <SectionTitle>⚠️ Concerns</SectionTitle>
-                <InsightBox type="concern">
-                  {selectedPlayer.kScore.concerns.length > 0 ? (
-                    <InsightList>
-                      {selectedPlayer.kScore.concerns.map((s: string, i: number) => (
-                        <InsightItem key={i} type="concern">{s}</InsightItem>
-                      ))}
-                    </InsightList>
-                  ) : (
-                    <div style={{ color: '#aaa', fontSize: '0.9rem' }}>No major concerns detected</div>
-                  )}
+            {/* KFS Score Breakdown */}
+            <KFSBreakdownSection>
+              <KFSBreakdownTitle>
+                <span>🧮 KFS Score 산출</span>
+                <KFSFinalScore>{selectedPlayer.kfsScore.toFixed(1)}</KFSFinalScore>
+              </KFSBreakdownTitle>
+              <KFSBreakdownGrid>
+                <KFSBreakdownItem>
+                  <KFSBreakdownLabel>BABIP</KFSBreakdownLabel>
+                  <KFSBreakdownValue>{kfsBreakdown.babip.value.toFixed(3)}</KFSBreakdownValue>
+                  <KFSBreakdownWeight>{kfsBreakdown.babip.weight}</KFSBreakdownWeight>
+                </KFSBreakdownItem>
+                <KFSBreakdownItem>
+                  <KFSBreakdownLabel>OBP</KFSBreakdownLabel>
+                  <KFSBreakdownValue>{kfsBreakdown.obp.value.toFixed(3)}</KFSBreakdownValue>
+                  <KFSBreakdownWeight>{kfsBreakdown.obp.weight}</KFSBreakdownWeight>
+                </KFSBreakdownItem>
+                <KFSBreakdownItem>
+                  <KFSBreakdownLabel>HR</KFSBreakdownLabel>
+                  <KFSBreakdownValue>{kfsBreakdown.hr.value}</KFSBreakdownValue>
+                  <KFSBreakdownWeight>{kfsBreakdown.hr.weight}</KFSBreakdownWeight>
+                </KFSBreakdownItem>
+                <KFSBreakdownItem>
+                  <KFSBreakdownLabel>GDP</KFSBreakdownLabel>
+                  <KFSBreakdownValue>{kfsBreakdown.gdp.value}</KFSBreakdownValue>
+                  <KFSBreakdownWeight>{kfsBreakdown.gdp.weight}</KFSBreakdownWeight>
+                </KFSBreakdownItem>
+                <KFSBreakdownItem>
+                  <KFSBreakdownLabel>AVG</KFSBreakdownLabel>
+                  <KFSBreakdownValue>{kfsBreakdown.avg.value.toFixed(3)}</KFSBreakdownValue>
+                  <KFSBreakdownWeight>{kfsBreakdown.avg.weight}</KFSBreakdownWeight>
+                </KFSBreakdownItem>
+              </KFSBreakdownGrid>
+            </KFSBreakdownSection>
 
-                </InsightBox>
-              </div>
-            </InsightsContainer>
+            {deepDive && (
+              <DeepDiveSection>
+                <DeepDiveTitle>{deepDive.title}</DeepDiveTitle>
+                <DeepDiveContent>
+                  {deepDive.paragraphs.map((p, idx) => (
+                    <p key={idx} dangerouslySetInnerHTML={{ __html: p }} style={{ marginBottom: '0.5rem' }} />
+                  ))}
+                </DeepDiveContent>
+                <Verdict $score={selectedPlayer.kfsScore} dangerouslySetInnerHTML={{ __html: deepDive.verdict }} />
+              </DeepDiveSection>
+            )}
           </>
         ) : (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            color: '#666'
-          }}>
-            Select a player to view details
-          </div>
+          <EmptyState>
+            <span style={{ fontSize: '1.5rem' }}>👈</span>
+            <span>좌측에서 선수를 선택하세요</span>
+          </EmptyState>
         )}
       </RightPanel>
     </Container>

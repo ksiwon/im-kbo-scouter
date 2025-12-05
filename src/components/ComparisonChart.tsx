@@ -1,6 +1,6 @@
-// src/components/ComparisonChart.tsx   (전체 교체)
+// src/components/ComparisonChart.tsx
 import React, { useMemo } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import {
   BarChart,
   Bar,
@@ -10,9 +10,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Label,
 } from 'recharts';
 import { Player } from '../types';
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const ChartSection = styled.div`
   background: ${(p) => p.theme.colors.bg.tertiary};
@@ -20,22 +24,24 @@ const ChartSection = styled.div`
   border-radius: 16px;
   box-shadow: ${(p) => p.theme.shadows.lg};
   width: 100%;
+  animation: ${fadeIn} 0.6s ease-out;
 `;
 
 const Title = styled.h3`
   font-size: 1.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.5rem;
   color: ${(p) => p.theme.colors.text.primary};
 `;
 
-const TwoCol = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+const SubTitle = styled.p`
+  font-size: 0.9rem;
+  color: ${(p) => p.theme.colors.text.secondary};
+  margin-bottom: 1.5rem;
+`;
 
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
+const ChartWrapper = styled.div`
+  width: 100%;
+  height: 400px;
 `;
 
 interface ComparisonChartProps {
@@ -43,119 +49,126 @@ interface ComparisonChartProps {
   preKboData: Player[];
 }
 
-/** 좌측(Rate)에서만 사용하는 지표 */
-const RATE_METRICS = ['avg', 'obp', 'slg', 'bb_pct', 'k_pct'] as const;
-/** 우측(Count/Value)에서만 사용하는 지표 */
-const COUNT_METRICS = ['hr', 'pa', 'wrc_plus'] as const;
-
-type RateMetric = typeof RATE_METRICS[number];
-
-/** 상한을 보기 좋게 올림(예: 257 -> 280) */
-function niceCeil(maxVal: number, step = 20) {
-  if (!isFinite(maxVal) || maxVal <= 0) return step;
-  return Math.ceil(maxVal / step) * step;
-}
+const METRICS = [
+  { key: 'avg', label: 'AVG' },
+  { key: 'obp', label: 'OBP' },
+  { key: 'slg', label: 'SLG' },
+  { key: 'bb_pct', label: 'BB%' },
+  { key: 'k_pct', label: 'K%' },
+  { key: 'iso', label: 'ISO' },
+  { key: 'babip', label: 'BABIP' },
+];
 
 function ComparisonChart({ kboData, preKboData }: ComparisonChartProps) {
-  /** 평균값 계산 유틸 */
-  const avgOf = (arr: Player[], key: keyof Player) =>
-    arr.reduce((s, p) => s + (Number(p[key]) || 0), 0) / (arr.length || 1);
+  const chartData = useMemo(() => {
+    // 1. KBO 첫 해 wRC+ 기준 정렬
+    const sortedKbo = [...kboData]
+      .filter(p => p.wrc_plus !== undefined)
+      .sort((a, b) => (b.wrc_plus || 0) - (a.wrc_plus || 0));
 
-  /** 좌측(Rate) 데이터 */
-  const rateData = useMemo(() => {
-    return RATE_METRICS.map((m) => {
-      const pre = avgOf(preKboData, m as keyof Player);
-      const kbo = avgOf(kboData, m as keyof Player);
+    // 2. Best 10 & Worst 10 선정
+    const best10Kbo = sortedKbo.slice(0, 10);
+    const worst10Kbo = sortedKbo.slice(-10);
 
-      // AVG/OBP/SLG는 0.xxx, BB_PCT/K_PCT는 % -> 0.xxx로 변환
-      const asRate = (metric: RateMetric, v: number) =>
-        metric === 'bb_pct' || metric === 'k_pct' ? Number((v / 100).toFixed(3)) : Number(v.toFixed(3));
+    // 3. 해당 선수들의 Pre-KBO 데이터 매칭
+    const getPreStats = (kboPlayers: Player[]) => {
+      return kboPlayers
+        .map(k => preKboData.find(p => p.name === k.name))
+        .filter((p): p is Player => !!p);
+    };
+
+    const best10Pre = getPreStats(best10Kbo);
+    const worst10Pre = getPreStats(worst10Kbo);
+
+    // 4. 평균 계산 헬퍼
+    const calcAvg = (players: Player[], key: string) => {
+      if (!players.length) return 0;
+      const sum = players.reduce((acc, p) => {
+        let val = Number(p[key as keyof Player] || 0);
+        // ISO 계산 (SLG - AVG)
+        if (key === 'iso') {
+          val = (Number(p.slg) || 0) - (Number(p.avg) || 0);
+        }
+        return acc + val;
+      }, 0);
+      return sum / players.length;
+    };
+
+    // 5. 차트 데이터 생성
+    return METRICS.map(m => {
+      const bestAvg = calcAvg(best10Pre, m.key);
+      const worstAvg = calcAvg(worst10Pre, m.key);
+      
+      // % 단위 변환 (BB%, K%)
+      const isPercent = m.key.includes('pct');
+      const displayBest = isPercent ? Number((bestAvg / 100).toFixed(3)) : Number(bestAvg.toFixed(3));
+      const displayWorst = isPercent ? Number((worstAvg / 100).toFixed(3)) : Number(worstAvg.toFixed(3));
 
       return {
-        metric: m.toUpperCase().replace('_', ' '),
-        'Pre-KBO (Rate)': asRate(m, pre),
-        'KBO 첫 해 (Rate)': asRate(m, kbo),
+        metric: m.label,
+        'Best 10 (Pre-KBO)': displayBest,
+        'Worst 10 (Pre-KBO)': displayWorst,
+        gap: displayBest - displayWorst
       };
     });
   }, [kboData, preKboData]);
-
-  /** 우측(Count/Value) 데이터 */
-  const countData = useMemo(() => {
-    return COUNT_METRICS.map((m) => {
-      const pre = avgOf(preKboData, m as keyof Player);
-      const kbo = avgOf(kboData, m as keyof Player);
-      return {
-        metric: m.toUpperCase().replace('_', ' '),
-        'Pre-KBO (Count)': Number(pre.toFixed(1)),
-        'KBO 첫 해 (Count)': Number(kbo.toFixed(1)),
-      };
-    });
-  }, [kboData, preKboData]);
-
-  /** 우측 축 상한 자동 산정 */
-  const countMax = useMemo(() => {
-    const vals = countData.flatMap((d) => [d['Pre-KBO (Count)'], d['KBO 첫 해 (Count)']]);
-    return niceCeil(Math.max(...vals), 20);
-  }, [countData]);
-
-  const chartMargin = { top: 8, right: 20, left: 16, bottom: 8 } as const;
 
   return (
     <ChartSection>
-      <Title>⚖️ Pre-KBO vs KBO 첫 해 주요 지표 비교</Title>
+      <Title>🏆 성공 vs 실패 그룹의 Pre-KBO 스탯 비교</Title>
+      <SubTitle>
+        KBO 첫 해 wRC+ 상위 10명(Best)과 하위 10명(Worst)의 
+        <br />
+        <strong>한국 오기 전(Pre-KBO) 평균 성적</strong>을 비교했습니다.
+      </SubTitle>
 
-      <TwoCol>
-        {/* 좌측: Rate 전용 */}
-        <div style={{ width: '100%', height: 440 }}>
-          <ResponsiveContainer>
-            <BarChart data={rateData} margin={chartMargin} barGap={4} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
-              <XAxis dataKey="metric" stroke="#9aa0a6" />
-              <YAxis
-                domain={[0, 1.0]}
-                ticks={[0, 0.2, 0.4, 0.6, 0.8, 1.0]}
-                tickFormatter={(t) => t.toFixed(1)}
-                stroke="#9aa0a6"
-              >
-                <Label value="Rate (0.xxx)" angle={-90} position="insideLeft" style={{ fill: '#9aa0a6' }} />
-              </YAxis>
-              <Tooltip
-                contentStyle={{ backgroundColor: '#1e2749', border: '1px solid #4285f4', borderRadius: 8 }}
-                labelStyle={{ color: '#e8eaed' }}
-              />
-              <Legend />
-              <Bar dataKey="Pre-KBO (Rate)" name="Pre-KBO (Rate)" fill="#fbbc04" />
-              <Bar dataKey="KBO 첫 해 (Rate)" name="KBO 첫 해 (Rate)" fill="#6388ff" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* 우측: Count/Value 전용 */}
-        <div style={{ width: '100%', height: 440 }}>
-          <ResponsiveContainer>
-            <BarChart data={countData} margin={chartMargin} barGap={4} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
-              <XAxis dataKey="metric" stroke="#9aa0a6" />
-              <YAxis
-                domain={[0, countMax]}
-                ticks={[0, countMax * 0.25, countMax * 0.5, countMax * 0.75, countMax]}
-                tickFormatter={(t) => (t % 1 === 0 ? t.toString() : t.toFixed(0))}
-                stroke="#9aa0a6"
-              >
-                <Label value="Count / Value" angle={-90} position="insideLeft" style={{ fill: '#9aa0a6' }} />
-              </YAxis>
-              <Tooltip
-                contentStyle={{ backgroundColor: '#1e2749', border: '1px solid #4285f4', borderRadius: 8 }}
-                labelStyle={{ color: '#e8eaed' }}
-                formatter={(val: any) => (typeof val === 'number' ? val : '-')}
-              />
-              <Legend />
-              <Bar dataKey="Pre-KBO (Count)" name="Pre-KBO (Count)" fill="#fbbc04" />
-              <Bar dataKey="KBO 첫 해 (Count)" name="KBO 첫 해 (Count)" fill="#6388ff" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </TwoCol>
+      <ChartWrapper>
+        <ResponsiveContainer>
+          <BarChart 
+            data={chartData} 
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            barGap={8}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" vertical={false} />
+            <XAxis 
+              dataKey="metric" 
+              stroke="#9aa0a6" 
+              tick={{ fill: '#9aa0a6' }}
+            />
+            <YAxis 
+              stroke="#9aa0a6" 
+              tick={{ fill: '#9aa0a6' }}
+              tickFormatter={(val) => val.toFixed(2)}
+            />
+            <Tooltip
+              contentStyle={{ 
+                backgroundColor: '#1e2749', 
+                border: '1px solid #4285f4', 
+                borderRadius: 8,
+                boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+              }}
+              labelStyle={{ color: '#e8eaed', fontWeight: 'bold', marginBottom: '0.5rem' }}
+              itemStyle={{ padding: '2px 0' }}
+              cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+            />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+            />
+            <Bar 
+              dataKey="Best 10 (Pre-KBO)" 
+              name="Best 10 (wRC+ 상위)" 
+              fill="#4285f4" 
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="Worst 10 (Pre-KBO)" 
+              name="Worst 10 (wRC+ 하위)" 
+              fill="#ea4335" 
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartWrapper>
     </ChartSection>
   );
 }

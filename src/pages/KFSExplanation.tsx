@@ -1,24 +1,30 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Card, CardTitle, StatLabel } from '../components/Common';
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
+  animation: ${fadeIn} 0.6s ease-out;
 `;
 
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: ${props => props.theme.colors.text.primary};
   border-left: 4px solid ${props => props.theme.colors.primary};
   padding-left: 1rem;
@@ -26,13 +32,13 @@ const SectionTitle = styled.h2`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
 `;
 
 const FormulaBox = styled.div`
   background: rgba(255, 255, 255, 0.05);
-  padding: 2rem;
+  padding: 1rem;
   border-radius: ${props => props.theme.borderRadius.xl};
   border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
@@ -56,7 +62,7 @@ const FactorCard = styled(Card)`
 `;
 
 const FactorTitle = styled.h3`
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: ${props => props.theme.colors.text.primary};
   margin-bottom: 0.5rem;
   display: flex;
@@ -65,11 +71,10 @@ const FactorTitle = styled.h3`
 `;
 
 const WeightBadge = styled.span`
-  font-size: 0.9rem;
-  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
   background: ${props => props.theme.colors.primary}20;
   color: ${props => props.theme.colors.primary};
-  border-radius: 20px;
   border-radius: 20px;
   font-weight: 600;
 `;
@@ -105,9 +110,11 @@ function KFSExplanation() {
       </Section>
 
       <Section>
-        <SectionTitle>🧮 계산 알고리즘</SectionTitle>
+        <SectionTitle>🧮 최적화(Optimization) 알고리즘</SectionTitle>
         <FormulaBox>
-          <div style={{ marginBottom: '1rem', color: '#aaa', fontSize: '1rem' }}>Total Score (Normalized to 100)</div>
+          <div style={{ marginBottom: '1rem', color: '#aaa', fontSize: '1rem' }}>
+            KBO 외인들의 데이터 시뮬레이션을 통해 도출된 최적의 공식
+          </div>
           KFS Score = (
           <span className="highlight">BABIP</span> × 22.4% + 
           <span className="highlight"> OBP</span> × 21.8% + 
@@ -160,7 +167,7 @@ function KFSExplanation() {
               <WeightBadge>가중치 19.8%</WeightBadge>
             </FactorTitle>
             <StatLabel>
-              놀랍게도 병살타는 양의 상관관계를 보입니다.
+              놀랍게도 병살타는 뛰어난 선수일 수록 많은 경향을 보입니다.
               이는 강한 타구를 자주 만들어내고, 적극적인 타격을 하는 타자들이 성공할 확률이 높음을 의미합니다.
             </StatLabel>
           </FactorCard>
