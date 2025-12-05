@@ -45,12 +45,12 @@ const MetricButton = styled.button<{ active?: boolean }>`
 
 const CorrelationInfo = styled.div`
   margin-top: 2rem;
-  padding: 1.5rem;
+  padding: 1rem;
   background: ${props => props.theme.colors.bg.secondary};
   border-radius: ${props => props.theme.borderRadius.lg};
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
 `;
 
 const InfoItem = styled.div`

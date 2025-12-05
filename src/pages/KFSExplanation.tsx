@@ -8,7 +8,7 @@ const Container = styled.div`
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 `;
 
 const Section = styled.section`
@@ -26,7 +26,7 @@ const SectionTitle = styled.h2`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1rem;
 `;
 
@@ -56,7 +56,7 @@ const FactorCard = styled(Card)`
 `;
 
 const FactorTitle = styled.h3`
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: ${props => props.theme.colors.text.primary};
   margin-bottom: 0.5rem;
   display: flex;
@@ -65,11 +65,10 @@ const FactorTitle = styled.h3`
 `;
 
 const WeightBadge = styled.span`
-  font-size: 0.9rem;
-  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
   background: ${props => props.theme.colors.primary}20;
   color: ${props => props.theme.colors.primary};
-  border-radius: 20px;
   border-radius: 20px;
   font-weight: 600;
 `;
