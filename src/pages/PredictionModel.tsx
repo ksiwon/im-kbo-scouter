@@ -188,7 +188,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
   };
 
   const sortedAAAPlayers = [...aaaData]
-    .filter(p => p.wrc_plus && p.pa && p.pa > 200)
+    .filter(p => p.wrc_plus && p.pa && p.pa > 300)
     .sort((a, b) => (b.wrc_plus || 0) - (a.wrc_plus || 0));
 
   return (
@@ -203,7 +203,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
         
         {aaaData && aaaData.length > 0 && (
           <InputGroup style={{ marginTop: '1.5rem' }}>
-            <Label>🎯 2025 AAA 선수 선택 (200 PA 이상)</Label>
+            <Label>🎯 2025 AAA 선수 선택 (300 PA 이상)</Label>
             <PlayerSelect
               value={selectedAAAPlayer}
               onChange={(e) => handlePlayerSelect(e.target.value)}

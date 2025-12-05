@@ -23,7 +23,7 @@ import PredictionModel from './pages/PredictionModel';
 // Data
 import kboFirstYearData from './data/kbo_first_year_stats_matched.json';
 import preKboData from './data/pre_kbo_stats_matched.json';
-import aaaData from './data/aaa_2025_stats.json';
+import aaaData from './data/aaa_2025_stats_converted.json';
 import { generateContextNote } from './utils/sabermetrics';
 
 // Styled Components
@@ -362,11 +362,15 @@ function App() {
           </Title>
           <Text>
             2025년, KBO 구단들이 주목해야 할 선수는 누구일까요?
-            <Emphasis> 158명의 AAA 타자</Emphasis>들을 KFS Score로 분석했습니다.
+            <Emphasis> {aaaData.total}명의 AAA 타자</Emphasis>들을 KFS Score로 분석했습니다.
           </Text>
           <Text>
-            우측의 리스트에서 선수를 선택하여 상세 분석을 확인하세요.
-            <Emphasis> 스탯 영역을 클릭</Emphasis>하면 심층 분석(Deep Dive)이 제공됩니다.
+            <Emphasis>Why 300 PA?</Emphasis>
+            <br />
+            AAA에서 300타석 이상을 소화했다는 것은 MLB의 부름을 받지 못했다는 뜻이기도 하지만, 동시에 팀이 여전히 잠재력을 인정하고 기회를 주었다는 증거입니다.
+          </Text>
+          <Text>
+            메릴 켈리, 브룩스 레일리처럼, 이들은 KBO에서 새로운 '성공 신화'를 쓸 준비가 된 숨겨진 보석들일 수 있습니다.
           </Text>
           <ContextNote title="SCOUTING TIP" icon="🎯">
             {generateContextNote('aaa-scouting')}
@@ -381,7 +385,7 @@ function App() {
           <Text>
             궁금한 선수가 있나요?
             AAA 성적을 입력하거나 선수를 선택하여
-            <Emphasis> KBO 예상 성적과 성공 확률</Emphasis>을 시뮬레이션해보세요.
+            <Emphasis> KBO에서의 성공 확률</Emphasis>을 시뮬레이션해보세요.
           </Text>
           <ContextNote title="TRY IT" icon="🔮">
             {generateContextNote('prediction')}
