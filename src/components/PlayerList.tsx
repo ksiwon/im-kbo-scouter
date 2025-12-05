@@ -295,7 +295,6 @@ function PlayerList({ kboData, preKboData }: PlayerListProps) {
                 <StatRow><StatName>BB%</StatName><StatVal>{preData.bb_pct?.toFixed(1)}%</StatVal></StatRow>
                 <StatRow><StatName>K%</StatName><StatVal>{preData.k_pct?.toFixed(1)}%</StatVal></StatRow>
                 <StatRow><StatName>HR</StatName><StatVal>{preData.hr}</StatVal></StatRow>
-                <StatRow><StatName>ISO</StatName><StatVal>{preData.iso?.toFixed(3)}</StatVal></StatRow>
                 <StatRow><StatName>BABIP</StatName><StatVal>{preData.babip?.toFixed(3)}</StatVal></StatRow>
               </>
             ) : (

@@ -108,7 +108,7 @@ function KFSExplanation() {
         <SectionTitle>🧮 최적화(Optimization) 알고리즘</SectionTitle>
         <FormulaBox>
           <div style={{ marginBottom: '1rem', color: '#aaa', fontSize: '1rem' }}>
-            수천 명의 데이터 시뮬레이션을 통해 도출된 최적의 공식
+            KBO 외인들의 데이터 시뮬레이션을 통해 도출된 최적의 공식
           </div>
           KFS Score = (
           <span className="highlight">BABIP</span> × 22.4% + 
@@ -162,7 +162,7 @@ function KFSExplanation() {
               <WeightBadge>가중치 19.8%</WeightBadge>
             </FactorTitle>
             <StatLabel>
-              놀랍게도 병살타는 양의 상관관계를 보입니다.
+              놀랍게도 병살타는 뛰어난 선수일 수록 많은 경향을 보입니다.
               이는 강한 타구를 자주 만들어내고, 적극적인 타격을 하는 타자들이 성공할 확률이 높음을 의미합니다.
             </StatLabel>
           </FactorCard>

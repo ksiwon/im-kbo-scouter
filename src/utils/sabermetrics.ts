@@ -500,7 +500,7 @@ export const generateContextNote = (sectionId: string): string => {
       return '리그 이동에 따른 성적 변화(Delta)를 주목하십시오. KBO 투수들의 평균 구속은 낮지만, 변화구 구사율과 유인구 승부는 집요합니다. 컨택율이 뒷받침되지 않는 파워는 KBO에서 "선풍기"로 전락할 위험이 큽니다.';
     
     case 'kfs':
-      return 'KFS Score는 단순한 통계의 합이 아닙니다. 수천 명의 데이터 시뮬레이션과 최적화(Optimization) 과정을 통해 도출된, KBO 리그 성공 확률을 가장 정확하게 예측하는 알고리즘 지표입니다.';
+      return 'KFS Score는 단순한 통계의 합이 아닙니다. KBO 외인들의 데이터 시뮬레이션과 최적화(Optimization) 과정을 통해 도출된, KBO 리그 성공 확률을 가장 정확하게 예측하는 알고리즘 지표입니다.';
     
     case 'aaa-scouting':
       return '2025년 AAA 타자들 중 "S-Tier" 등급을 받은 선수는 손에 꼽습니다. 숫자에 속지 마세요. wRC+가 높다고 해서 성공이 보장되는 것은 아닙니다.';
