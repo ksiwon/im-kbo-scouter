@@ -57,7 +57,7 @@ const ScrollIndicator = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  color: ${props => props.theme.colors.text.disabled};
+  color: white;
   font-size: 0.75rem;
   animation: ${pulse} 2s ease-in-out infinite;
   margin-top: 3rem;
@@ -324,7 +324,7 @@ function App() {
           <Text>
             모든 선수는 리그를 옮길 때 '적응 비용'을 치릅니다.
             KBO 리그는 AAA보다 투수들의 구속은 느리지만, 
-            <Emphasis>변화구 구사율이 높고 스트라이크 존이 다릅니다</Emphasis>.
+            <Emphasis> 변화구 구사율이 높고 스트라이크 존이 다릅니다</Emphasis>.
           </Text>
           <Text>
             평균적으로 타자들의 성적은 어떻게 변했을까요?
