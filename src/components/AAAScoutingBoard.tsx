@@ -138,21 +138,11 @@ const DetailSubtitle = styled.div`
   color: ${props => props.theme.colors.text.secondary};
 `;
 
-const AnalysisSummary = styled.div`
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  color: #d2dae2;
-  line-height: 1.5;
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
-`;
-
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   gap: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.75rem 0.25rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
   margin-bottom: 0.75rem;
@@ -160,17 +150,17 @@ const StatsGrid = styled.div`
 
 const StatBox = styled.div`
   text-align: center;
-  padding: 0.25rem;
+  padding: 0.2rem;
 `;
 
 const StatValue = styled.div`
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: ${props => props.theme.colors.primary};
 `;
 
 const StatLabel = styled.div`
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   color: ${props => props.theme.colors.text.secondary};
 `;
 
@@ -233,19 +223,19 @@ const KFSBreakdownItem = styled.div`
 `;
 
 const KFSBreakdownValue = styled.div`
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #fff;
 `;
 
 const KFSBreakdownLabel = styled.div`
-  font-size: 0.55rem;
+  font-size: 0.7rem;
   color: ${props => props.theme.colors.text.secondary};
   margin-bottom: 0.1rem;
 `;
 
 const KFSBreakdownWeight = styled.div`
-  font-size: 0.5rem;
+  font-size: 0.7rem;
   color: #646cff;
   margin-top: 0.1rem;
 `;
@@ -333,7 +323,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
 
   const playersWithAnalysis = useMemo(() => {
     return aaaData
-      .filter(p => p.pa && p.pa >= 200)
+      .filter(p => p.pa && p.pa >= 300)
       .map(player => ({
         ...player,
         analysis: calculateRisk(player),
@@ -425,9 +415,7 @@ function AAAScoutingBoard({ aaaData }: AAAScoutingBoardProps) {
               </div>
             </DetailHeader>
 
-            <AnalysisSummary>{selectedPlayer.analysis.summary}</AnalysisSummary>
-
-            <h3 style={{ color: '#fff', marginBottom: '0.35rem', fontSize: '0.85rem' }}>📊 2025 AAA 핵심 스탯</h3>
+            <h3 style={{ color: '#fff', marginTop: '0.5rem', marginBottom: '0.35rem', fontSize: '0.85rem' }}>📊 2025 AAA 핵심 스탯</h3>
             <StatsGrid>
               <StatBox><StatValue>{selectedPlayer.avg?.toFixed(3)}</StatValue><StatLabel>AVG</StatLabel></StatBox>
               <StatBox><StatValue>{selectedPlayer.obp?.toFixed(3)}</StatValue><StatLabel>OBP</StatLabel></StatBox>

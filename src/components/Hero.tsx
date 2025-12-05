@@ -151,7 +151,7 @@ function Hero() {
           <StatLabel>2010-2024 데이터</StatLabel>
         </StatItem>
         <StatItem>
-          <StatNumber>158명</StatNumber>
+          <StatNumber>241명</StatNumber>
           <StatLabel>2025 AAA 스카우팅</StatLabel>
         </StatItem>
       </StatsRow>
