@@ -51,12 +51,12 @@ const MetricButton = styled.button<{ active?: boolean }>`
 
 const CorrelationInfo = styled.div`
   margin-top: 2rem;
-  padding: 1rem;
+  padding: 1rem 2.5rem;
   background: ${props => props.theme.colors.bg.secondary};
   border-radius: ${props => props.theme.borderRadius.lg};
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
 const InfoItem = styled.div`
@@ -64,15 +64,30 @@ const InfoItem = styled.div`
 `;
 
 const InfoLabel = styled.div`
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   color: ${props => props.theme.colors.text.secondary};
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 `;
 
 const InfoValue = styled.div<{ color?: string }>`
-  font-size: 1.8rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: ${props => props.color || props.theme.colors.primary};
+`;
+
+const ChartsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ChartSection = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 interface CorrelationChartProps {
@@ -151,8 +166,6 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
 
   return (
     <ChartContainer>
-      <ChartTitle>🔗 Pre-KBO vs KBO 지표별 상관관계 (Consistency)</ChartTitle>
-      
       <MetricSelector>
         {metrics.map(metric => (
           <MetricButton
@@ -165,150 +178,154 @@ function CorrelationChart({ kboData, preKboData }: CorrelationChartProps) {
         ))}
       </MetricSelector>
 
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
-          <XAxis 
-            type="number" 
-            dataKey="pre" 
-            name={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`}
-            stroke="#9aa0a6"
-          >
-            <Label value={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`} position="bottom" style={{ fill: '#9aa0a6' }} />
-          </XAxis>
-          <YAxis 
-            type="number" 
-            dataKey="kbo" 
-            name={`KBO 첫 해 ${metrics.find(m => m.key === selectedMetric)?.label}`}
-            stroke="#9aa0a6"
-          >
-            <Label value={`KBO 첫 해 ${metrics.find(m => m.key === selectedMetric)?.label}`} angle={-90} position="left" style={{ fill: '#9aa0a6', textAnchor: 'middle' }} />
-          </YAxis>
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#1e2749', 
-              border: '1px solid #4285f4',
-              borderRadius: '8px',
-            }}
-            content={({ payload }) => {
-              if (payload && payload.length > 0) {
-                const data = payload[0].payload;
-                return (
-                  <div style={{ padding: '10px', backgroundColor: '#1e2749', borderRadius: '8px' }}>
-                    <p style={{ color: '#e8eaed', fontWeight: 'bold' }}>{data.name}</p>
-                    <p style={{ color: '#9aa0a6' }}>Pre-KBO {metrics.find(m => m.key === selectedMetric)?.label}: {data.pre}</p>
-                    <p style={{ color: '#9aa0a6' }}>KBO {metrics.find(m => m.key === selectedMetric)?.label}: {data.kbo}</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Scatter data={correlationData} fill="#4285f4" />
-          <ReferenceLine 
-            stroke="#fbbc04" 
-            strokeDasharray="5 5" 
-            segment={[
-              { x: Math.min(...correlationData.map(d => d.pre)), y: Math.min(...correlationData.map(d => d.kbo)) },
-              { x: Math.max(...correlationData.map(d => d.pre)), y: Math.max(...correlationData.map(d => d.kbo)) }
-            ]}
-          />
-        </ScatterChart>
-      </ResponsiveContainer>
+      <ChartsWrapper>
+        <ChartSection>
+          <ChartTitle>🔗 Pre-KBO vs KBO 지표별 상관관계 (Consistency)</ChartTitle>
+          <ResponsiveContainer width="100%" height={400}>
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
+              <XAxis 
+                type="number" 
+                dataKey="pre" 
+                name={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`}
+                stroke="#9aa0a6"
+              >
+                <Label value={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`} position="bottom" style={{ fill: '#9aa0a6' }} />
+              </XAxis>
+              <YAxis 
+                type="number" 
+                dataKey="kbo" 
+                name={`KBO 첫 해 ${metrics.find(m => m.key === selectedMetric)?.label}`}
+                stroke="#9aa0a6"
+              >
+                <Label value={`KBO 첫 해 ${metrics.find(m => m.key === selectedMetric)?.label}`} angle={-90} position="left" style={{ fill: '#9aa0a6', textAnchor: 'middle' }} />
+              </YAxis>
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1e2749', 
+                  border: '1px solid #4285f4',
+                  borderRadius: '8px',
+                }}
+                content={({ payload }) => {
+                  if (payload && payload.length > 0) {
+                    const data = payload[0].payload;
+                    return (
+                      <div style={{ padding: '10px', backgroundColor: '#1e2749', borderRadius: '8px' }}>
+                        <p style={{ color: '#e8eaed', fontWeight: 'bold' }}>{data.name}</p>
+                        <p style={{ color: '#9aa0a6' }}>Pre-KBO {metrics.find(m => m.key === selectedMetric)?.label}: {data.pre}</p>
+                        <p style={{ color: '#9aa0a6' }}>KBO {metrics.find(m => m.key === selectedMetric)?.label}: {data.kbo}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Scatter data={correlationData} fill="#4285f4" />
+              <ReferenceLine 
+                stroke="#fbbc04" 
+                strokeDasharray="5 5" 
+                segment={[
+                  { x: Math.min(...correlationData.map(d => d.pre)), y: Math.min(...correlationData.map(d => d.kbo)) },
+                  { x: Math.max(...correlationData.map(d => d.pre)), y: Math.max(...correlationData.map(d => d.kbo)) }
+                ]}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
 
-      <CorrelationInfo>
-        <InfoItem>
-          <InfoLabel>상관계수 (r)</InfoLabel>
-          <InfoValue color={getCorrelationColor(consistencyCorrelation)}>
-            {consistencyCorrelation.toFixed(3)}
-          </InfoValue>
-        </InfoItem>
-        <InfoItem>
-          <InfoLabel>데이터 포인트</InfoLabel>
-          <InfoValue>{correlationData.length}명</InfoValue>
-        </InfoItem>
-        <InfoItem>
-          <InfoLabel>상관 강도</InfoLabel>
-          <InfoValue color={getCorrelationColor(consistencyCorrelation)}>
-            {getCorrelationStrength(consistencyCorrelation)}
-          </InfoValue>
-        </InfoItem>
-      </CorrelationInfo>
+          <CorrelationInfo>
+            <InfoItem>
+              <InfoLabel>상관계수 (r)</InfoLabel>
+              <InfoValue color={getCorrelationColor(consistencyCorrelation)}>
+                {consistencyCorrelation.toFixed(3)}
+              </InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>데이터 포인트</InfoLabel>
+              <InfoValue>{correlationData.length}명</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>상관 강도</InfoLabel>
+              <InfoValue color={getCorrelationColor(consistencyCorrelation)}>
+                {getCorrelationStrength(consistencyCorrelation)}
+              </InfoValue>
+            </InfoItem>
+          </CorrelationInfo>
+        </ChartSection>
 
-      <div style={{ margin: '3rem 0', borderTop: '1px solid #2a3f5f' }} />
+        <ChartSection>
+          <ChartTitle>🔮 Pre-KBO 지표 vs KBO wRC+ (Predictive Power)</ChartTitle>
+          <ResponsiveContainer width="100%" height={400}>
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
+              <XAxis 
+                type="number" 
+                dataKey="pre" 
+                name={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`}
+                stroke="#9aa0a6"
+              >
+                <Label value={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`} position="bottom" style={{ fill: '#9aa0a6' }} />
+              </XAxis>
+              <YAxis 
+                type="number" 
+                dataKey="wrc_plus" 
+                name="KBO 첫 해 wRC+"
+                stroke="#9aa0a6"
+              >
+                <Label value="KBO 첫 해 wRC+" angle={-90} position="left" style={{ fill: '#9aa0a6', textAnchor: 'middle' }} />
+              </YAxis>
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1e2749', 
+                  border: '1px solid #4285f4',
+                  borderRadius: '8px',
+                }}
+                content={({ payload }) => {
+                  if (payload && payload.length > 0) {
+                    const data = payload[0].payload;
+                    const metricLabel = metrics.find(m => m.key === selectedMetric)?.label;
+                    return (
+                      <div style={{ padding: '10px', backgroundColor: '#1e2749', borderRadius: '8px' }}>
+                        <p style={{ color: '#e8eaed', fontWeight: 'bold' }}>{data.name}</p>
+                        <p style={{ color: '#9aa0a6' }}>Pre-KBO {metricLabel}: {data.pre}</p>
+                        <p style={{ color: '#9aa0a6' }}>KBO wRC+: {data.wrc_plus}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Scatter data={correlationData} fill="#fbbc04" />
+              <ReferenceLine 
+                stroke="#4285f4" 
+                strokeDasharray="5 5" 
+                segment={[
+                  { x: Math.min(...correlationData.map(d => d.pre)), y: Math.min(...correlationData.map(d => d.wrc_plus)) },
+                  { x: Math.max(...correlationData.map(d => d.pre)), y: Math.max(...correlationData.map(d => d.wrc_plus)) }
+                ]}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
 
-      <ChartTitle>🔮 Pre-KBO 지표 vs KBO wRC+ (Predictive Power)</ChartTitle>
-      
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a3f5f" />
-          <XAxis 
-            type="number" 
-            dataKey="pre" 
-            name={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`}
-            stroke="#9aa0a6"
-          >
-            <Label value={`Pre-KBO ${metrics.find(m => m.key === selectedMetric)?.label}`} position="bottom" style={{ fill: '#9aa0a6' }} />
-          </XAxis>
-          <YAxis 
-            type="number" 
-            dataKey="wrc_plus" 
-            name="KBO 첫 해 wRC+"
-            stroke="#9aa0a6"
-          >
-            <Label value="KBO 첫 해 wRC+" angle={-90} position="left" style={{ fill: '#9aa0a6', textAnchor: 'middle' }} />
-          </YAxis>
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#1e2749', 
-              border: '1px solid #4285f4',
-              borderRadius: '8px',
-            }}
-            content={({ payload }) => {
-              if (payload && payload.length > 0) {
-                const data = payload[0].payload;
-                const metricLabel = metrics.find(m => m.key === selectedMetric)?.label;
-                return (
-                  <div style={{ padding: '10px', backgroundColor: '#1e2749', borderRadius: '8px' }}>
-                    <p style={{ color: '#e8eaed', fontWeight: 'bold' }}>{data.name}</p>
-                    <p style={{ color: '#9aa0a6' }}>Pre-KBO {metricLabel}: {data.pre}</p>
-                    <p style={{ color: '#9aa0a6' }}>KBO wRC+: {data.wrc_plus}</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Scatter data={correlationData} fill="#fbbc04" />
-          <ReferenceLine 
-            stroke="#4285f4" 
-            strokeDasharray="5 5" 
-            segment={[
-              { x: Math.min(...correlationData.map(d => d.pre)), y: Math.min(...correlationData.map(d => d.wrc_plus)) },
-              { x: Math.max(...correlationData.map(d => d.pre)), y: Math.max(...correlationData.map(d => d.wrc_plus)) }
-            ]}
-          />
-        </ScatterChart>
-      </ResponsiveContainer>
-
-      <CorrelationInfo>
-        <InfoItem>
-          <InfoLabel>상관계수 (r)</InfoLabel>
-          <InfoValue color={getCorrelationColor(predictiveCorrelation)}>
-            {predictiveCorrelation.toFixed(3)}
-          </InfoValue>
-        </InfoItem>
-        <InfoItem>
-          <InfoLabel>데이터 포인트</InfoLabel>
-          <InfoValue>{correlationData.length}명</InfoValue>
-        </InfoItem>
-        <InfoItem>
-          <InfoLabel>상관 강도</InfoLabel>
-          <InfoValue color={getCorrelationColor(predictiveCorrelation)}>
-            {getCorrelationStrength(predictiveCorrelation)}
-          </InfoValue>
-        </InfoItem>
-      </CorrelationInfo>
+          <CorrelationInfo>
+            <InfoItem>
+              <InfoLabel>상관계수 (r)</InfoLabel>
+              <InfoValue color={getCorrelationColor(predictiveCorrelation)}>
+                {predictiveCorrelation.toFixed(3)}
+              </InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>데이터 포인트</InfoLabel>
+              <InfoValue>{correlationData.length}명</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>상관 강도</InfoLabel>
+              <InfoValue color={getCorrelationColor(predictiveCorrelation)}>
+                {getCorrelationStrength(predictiveCorrelation)}
+              </InfoValue>
+            </InfoItem>
+          </CorrelationInfo>
+        </ChartSection>
+      </ChartsWrapper>
     </ChartContainer>
   );
 }
