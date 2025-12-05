@@ -79,14 +79,14 @@ function DeltaInsights() {
       
       <InsightList>
         <InsightItem>
-          <Icon>🎯</Icon>
+          <Icon>📊</Icon>
           <Content>
-            <ItemTitle>선구안(BB%)과 컨택(K%)의 중요성</ItemTitle>
+            <ItemTitle>클래식 지표의 배신 (AVG, OBP, SLG)</ItemTitle>
             <ItemText>
-              성공한 그룹(Best 10)은 실패한 그룹에 비해 <strong>월등히 높은 볼넷 비율(BB%)</strong>과 
-              <strong> 낮은 삼진율(K%)</strong>을 기록했습니다. 
-              이는 KBO 리그의 변화구 위주 투구 패턴에 적응하는 데 있어 
-              <strong>'참을성'과 '컨택 능력'</strong>이 가장 중요한 자질임을 시사합니다.
+              놀랍게도 <strong>타율(AVG), 출루율(OBP), 장타율(SLG)</strong>과 같은 클래식 지표들은 
+              성공 그룹과 실패 그룹 간에 <strong>유의미한 차이를 보이지 않습니다.</strong> 
+              Box Plot의 중앙값(Median)이 거의 비슷하게 위치하며, 이는 AAA에서의 표면적인 성적이 
+              KBO에서의 성공을 전혀 담보하지 못함을 의미합니다.
             </ItemText>
           </Content>
         </InsightItem>
@@ -94,12 +94,12 @@ function DeltaInsights() {
         <InsightItem>
           <Icon>📉</Icon>
           <Content>
-            <ItemTitle>장타력(SLG, HR)의 함정</ItemTitle>
+            <ItemTitle>실패 그룹의 극심한 편차 (High Variance)</ItemTitle>
             <ItemText>
-              반면, 장타율이나 홈런 개수는 두 그룹 간의 차이가 상대적으로 적거나, 
-              오히려 실패한 그룹이 더 높은 경우도 있습니다. 
-              AAA(특히 PCL)의 타고투저 환경에서 만들어진 <strong>'거품 낀 장타력'</strong>에 
-              현혹되어서는 안 된다는 것을 보여줍니다.
+              실패 그룹(Worst 10)의 가장 큰 특징은 <strong>Box와 Whiskers의 길이가 매우 길다는 점</strong>입니다. 
+              이는 선수별로 성적 편차가 극심함을 보여줍니다. 어떤 선수는 매우 높은 수치를 기록했지만 실패했고, 
+              어떤 선수는 낮은 수치임에도 실패했습니다. 즉, <strong>지표의 일관성(Consistency)이 결여</strong>되어 있어 
+              예측 불확실성이 매우 높습니다.
             </ItemText>
           </Content>
         </InsightItem>
@@ -107,11 +107,12 @@ function DeltaInsights() {
         <InsightItem>
           <Icon>🔑</Icon>
           <Content>
-            <ItemTitle>결론: 환경 독립적 지표에 주목하라</ItemTitle>
+            <ItemTitle>결론: 숫자의 크기보다 '밀도'</ItemTitle>
             <ItemText>
-              리그 이동 시 변동성이 큰 '결과 지표(AVG, HR)'보다는, 
-              타자의 고유한 성향을 나타내는 <strong>'과정 지표(BB%, K%, Contact%)'</strong>가 
-              KBO 적응 성공 여부를 예측하는 데 훨씬 더 신뢰할 수 있는 신호입니다.
+              성공한 그룹은 지표가 <strong>좁은 범위 내에 밀집(Dense)</strong>되어 있는 반면, 
+              실패한 그룹은 <strong>넓게 퍼져(Spread)</strong> 있습니다. 
+              단순히 높은 숫자를 쫓기보다, 해당 지표가 얼마나 안정적으로 유지되는지 
+              <strong>'분포의 밀도'</strong>를 확인하는 것이 스카우팅의 핵심입니다.
             </ItemText>
           </Content>
         </InsightItem>

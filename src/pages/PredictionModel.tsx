@@ -389,7 +389,7 @@ function PredictionModel({ kboData, preKboData, aaaData = [] }: PredictionModelP
               marginBottom: '1rem',
               fontSize: '1.1rem'
             }}>
-              점수 세부 구성 (No Caps)
+              점수 세부 구성
             </h4>
             <BreakdownItem>
               <span style={{ color: 'rgba(255,255,255,0.8)' }}>
