@@ -4,5 +4,11 @@
   "assets": {
     "directory": "./build",
     "not_found_handling": "single-page-application"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "im-kbo-scouter.siwon.it.kr",
+      "custom_domain": true
+    }
+  ]
 }
